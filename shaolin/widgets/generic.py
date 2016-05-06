@@ -357,7 +357,8 @@ class MarkerMappedParams(object):
                  values=None,
                  params=None,
                  name=None,
-                 param_type=DataFrameMappedParameter):
+                 param_type=DataFrameMappedParameter,
+                 title='Mapper'):
         """This widget creates a parameter selector"""
 
         #if there is no default map use a dataframe,
@@ -465,8 +466,8 @@ class MarkerMappedParams(object):
                     .scparam{margin-top:5% !important;}
                     
                 </style>'''
-
-        self.titlebar = [widgets.HTML(value=css)]
+        title_text = '<div style="font-size:22px;font-weight:bold;">'+title+'</div>'
+        self.titlebar = [widgets.HTML(value=title_text+css)]
         self.titlebar += [widgets.HTML(value='<h3 class="scpsel-tbar">Property<h3>',
                                        width="150px")]
         self.titlebar += [widgets.HTML(value='<h3 class="scpsel-tbar">'+

@@ -82,7 +82,23 @@ class DataFrameScatter(Shaolin):
         self.customize_children_widgets()
         self.init_plot()
 
-
+    
+    @property
+    def mapper_widget(self):
+        """display the parameter mapper"""
+        return self.marker_map_sel.widget
+    @property
+    def free_widget(self):
+        """display the parameter mapper"""
+        return self.marker_free_sel.widget
+    @property
+    def scale_widget(self):
+        """display the parameter mapper"""
+        return self.scaler.widget
+    @property
+    def tooltip_widget(self):
+        """display the parameter mapper"""
+        return self.tooltip.widget
     @property
     def widget(self):
         """Dispaly full GUI"""
@@ -112,18 +128,53 @@ class DataFrameScatter(Shaolin):
         """Shaolin widget init. This is mainly for defining the widget
         the user will interact with
         """
+        self.toggle_map = widgets.ToggleButton(description='Mapper',
+                                               value=True, padding=6)
+
+        self.toggle_map.observe(self._on_togmap_change, names='value')
+
+        self.toggle_free = widgets.ToggleButton(description='Free',
+                                                value=True, padding=6)
+        self.toggle_free.observe(self._on_togfree_change, names='value')
+
+        self.toggle_scale = widgets.ToggleButton(description='Scale',
+                                                 value=True, padding=6)
+        self.toggle_scale.observe(self._on_togscale_change, names='value')
+
+        self.toggle_ttip = widgets.ToggleButton(description='Tooltip',
+                                                value=True, padding=6)
+        self.toggle_ttip.observe(self._on_togttip_change, names='value')
+
+        self.btn_box = widgets.HBox(children=[self.toggle_map,
+                                              self.toggle_free,
+                                              self.toggle_scale,
+                                              self.toggle_ttip], padding=6)
         self._plotbox = widgets.VBox(children=[self.marker_free_sel.widget,
                                                self.tooltip.widget,
                                               ]
                                     )
-        self.controls = widgets.HBox(children=[self.marker_map_sel.widget,
-                                               self._plotbox, self.scaler.widget])
+        self._controls = widgets.HBox(children=[self.marker_map_sel.widget,
+                                                self._plotbox, self.scaler.widget])
+        self.controls = widgets.VBox(children=[self._controls,
+                                               self.btn_box])
+
+    def _on_togmap_change(self, _):
+        self.marker_map_sel.widget.visible = self.toggle_map.value
+
+    def _on_togfree_change(self, _):
+        self.marker_free_sel.widget.visible = self.toggle_free.value
+
+    def _on_togscale_change(self, _):
+        self.scaler.widget.visible = self.toggle_scale.value
+
+    def _on_togttip_change(self, _):
+        self.tooltip.widget.visible = self.toggle_ttip.value
 
     def init_free_params_sel(self):
         """Handle plot free params selectors init. A free param means a
         plot parameter that is not mapped to data
         """
-        self.marker_free_sel = swg.MarkerFreeParams(self.free_params, title=('Select a column'))
+        self.marker_free_sel = swg.MarkerFreeParams(self.free_params, title=('Free parameters'))
         for param in self.free_params:
             getattr(self.marker_free_sel, param).observe(self.trigger_update, names='value')
 
@@ -234,7 +285,7 @@ class DataFrameScatter(Shaolin):
     def customize_children_widgets(self):
         """Adapt children widgets to a combined display"""
         self.marker_map_sel.x.name.visible = True
-        pass
+        
 
 
 

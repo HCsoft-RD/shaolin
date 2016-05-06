@@ -10,13 +10,13 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='sample',
+    name='shaolin',
     version='0.0.1',
-    description='Sample package for Python-Guide.org',
+    description='Interactive data visualization for the jupyter notebook',
     long_description=readme,
-    author='Kenneth Reitz',
-    author_email='me@kennethreitz.com',
-    url='https://github.com/kennethreitz/samplemod',
+    author='Guillem Duran Ballester(HCSoft)',
+    author_email='oficina@hcsoft.net',
+    url='https://github.com/HCsoft-RD/shaolin',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
 )
