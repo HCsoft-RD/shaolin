@@ -120,12 +120,13 @@ class GraphPlot(Shaolin):
         self.node_active_params = dict([(x, False) for x in self.node_marker_params])
         self.edge_active_params = dict([(x, False) for x in self.edge_marker_params])
 
-        self.node_scaler = sww.ScaleParams()
-        self.edge_scaler = sww.ScaleParams()
+        self.node_scaler = sww.ScaleParams(title='Node Scale')
+        self.edge_scaler = sww.ScaleParams(title='Edge Scale')
         self.node_scaler.external_observe(self.trigger_update)
         self.edge_scaler.external_observe(self.trigger_update)
         super(GraphPlot, self).__init__()
         self.init_widget()
+        self.customize_children_widgets()
         self.init_plot()
 
 
@@ -173,11 +174,14 @@ class GraphPlot(Shaolin):
         self.edge_sel_b.visible = self.toggle_edg.value
 
     def on_togdef_change(self, _):
-        self.node_marker_free_sel.widget.visible = self.toggle_def.value
-        self.edge_marker_free_sel.widget.visible = self.toggle_def.value
+        self.def_box.visible = self.toggle_def.value
+        
+
+    def on_togscale_change(self, _):
+        self.scaler_box.visible = self.toggle_scale.value
 
     def on_toggraph_change(self, _):
-        self.gc.widget.visible = self.toggle_graph.value
+        self.gcwidget.visible = self.toggle_graph.value
 
     def on_calculate_click(self, _):
         self.gc.update()
@@ -196,16 +200,16 @@ class GraphPlot(Shaolin):
         self.edge_marker_map_sel.marker.active.observe(self.on_marker_change,
                                                        names='value')
 
-        self.toggle_nod = widgets.ToggleButton(description='Node P',
+        self.toggle_nod = widgets.ToggleButton(description='Node Map',
                                                value=True, padding=6)
 
         self.toggle_nod.observe(self.on_tognod_change, names='value')
 
-        self.toggle_edg = widgets.ToggleButton(description='Edge P',
+        self.toggle_edg = widgets.ToggleButton(description='Edge Map',
                                                value=True, padding=6)
         self.toggle_edg.observe(self.on_togedg_change, names='value')
 
-        self.toggle_def = widgets.ToggleButton(description='Defaults',
+        self.toggle_def = widgets.ToggleButton(description='Free',
                                                value=True, padding=6)
         self.toggle_def.observe(self.on_togdef_change, names='value')
 
@@ -213,10 +217,15 @@ class GraphPlot(Shaolin):
                                                  value=True, padding=6)
         self.toggle_graph.observe(self.on_toggraph_change, names='value')
 
+        self.toggle_scale = widgets.ToggleButton(description='Scale',
+                                                 value=True, padding=6)
+        self.toggle_scale.observe(self.on_togscale_change, names='value')
+
         self.btn_box = widgets.HBox(children=[self.toggle_nod,
                                               self.toggle_edg,
                                               self.toggle_def,
-                                              self.toggle_graph], padding=6)
+                                              self.toggle_graph,
+                                              self.toggle_scale], padding=6)
         title_html = '''<div class="kf-graph-gplot" style=" font-size:22px;
                                                         font-weight: bold; 
                                                         text-align:right;">
@@ -267,18 +276,20 @@ class GraphPlot(Shaolin):
                                               self.node_ttip.widget,
                                               self.edge_marker_free_sel.widget,
                                               self.edge_ttip.widget])
-
+        self.scaler_box = widgets.HBox(children=[self.node_scaler.widget,
+                                                 self.edge_scaler.widget])
         self.calculate = widgets.Button(description='Update', padding=6, margin=6)
         self.calculate.on_click(self.on_calculate_click)
         gcbody = widgets.HBox(children=[self.gc.gp.widget,
-                                           self.gc.mp.widget,
-                                           self.gc.layout.widget])
-        gcwidget = widgets.VBox(children=[self.gc.title,
+                                        self.gc.mp.widget,
+                                        self.gc.layout.widget])
+        self.gcwidget = widgets.VBox(children=[self.gc.title,
                                           gcbody,
                                           self.gc.buttonbox])
         self.controls = widgets.VBox(children=[self.title,
                                                self.def_box,
-                                               gcwidget,
+                                               self.scaler_box,
+                                               self.gcwidget,
                                                self.sel_box,
                                                self.btn_box,
                                                self.calculate])
@@ -406,7 +417,7 @@ class GraphPlot(Shaolin):
         self.gc.node_metrics.combine_first(self.gc.node)
         self.node_tooltip_data = self.gc.node_metrics[list(self.node_ttip.target.value)]\
                                                      .fillna('NaN').copy()
-        
+
         self.edge_tooltip_data = self.gc.matrix_panel.to_frame()[list(self.edge_ttip.target.value)]\
                                                                 .fillna('NaN').copy()
         self.edge_tooltip_data.index = pd.MultiIndex.from_tuples(self.edge_tooltip_data.index)
@@ -499,7 +510,7 @@ class GraphPlot(Shaolin):
 
     def customize_children_widgets(self):
         """Adapt children widgets to a combined display"""
-        self.gc.calculate.visible=False
+        self.gc.calculate.visible = False
         pass
 
 

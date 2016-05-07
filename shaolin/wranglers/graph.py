@@ -23,14 +23,14 @@ LAYOUT_PARAMS = {'dim':'both',
                  'iterations':5000,
                  'prog':'neato',
                  'layout':'dh_spring_layout',
-                 'k':'exchange'}
+                 'k':'corr'}
 LAYOUTS = {'Circular layout': 'circular_layout',
            'Random layout': 'random_layout',
            'Shell layout':'shell_layout',
            'Spectral layout':'spectral_layout',
            'Spring layout':'spring_layout',
            'Graphviz layout':'draw_graphviz',
-           'HCsoft layout':'dh_spring_layout'}
+           'Custom spring layout':'dh_spring_layout'}
 
 TARGET_OPTIONS = {'Raw':'raw', #Do nothing
                   'Clip':'clip', #limit the matrix values betwen (min,max)
@@ -49,7 +49,7 @@ MATRIX_PARAMS = {'norm_min':0,
 GRAPH_PARAMS = {'graph_type':'full',
                 'inverted' :  False,
                 'threshold': 0.00,
-                'target_attr':'exchange'
+                'target_attr':'corr'
                }
 
 NODE_METRICS = ['betweenness_centrality',
@@ -67,7 +67,7 @@ NODE_METRICS = ['betweenness_centrality',
 NODE_TARGET_ATTRS = {'Simetric max':'M',
                      'Correlation':'corr',
                      'Covariance':'cov',
-                     'Market custom':'exchange',
+                     'Market custom':'corr',
                      'k spring':'k_price',
                      'L0':'l0',
                      'Simetric min':'m'}
@@ -85,7 +85,7 @@ class LayoutCalculator(object):
                          'iterations':5000,
                          'prog':'neato',
                          'layout':'dh_spring_layout',
-                         'k':'exchange'}
+                         'k':'corr'}
         LAYOUTS = {'Circular layout': 'circular_layout',
                    'Random layout': 'random_layout',
                    'Shell layout':'shell_layout',
@@ -581,7 +581,7 @@ class GraphMaker(object):
                  threshold=0.0,
                  matrix_params=[('raw', None)],
                  graph_type='full',
-                 target='exchange'):
+                 target='corr'):
 
         self.params = matrix_params
         self.panel = matrix_panel
@@ -778,7 +778,7 @@ class GraphCalculator(object):
         self.layout.params.widget.margin = 6
         self.layout.params.widget.padding = 6
 
-        self.display = widgets.HTML(value=self.display_str('Select and click run'),
+        self.display = widgets.HTML(value=self.display_str('Select and click Calculate'),
                                     height="50px", width="175px")
 
         self.calculate = widgets.Button(description='Calculate', padding=6)
@@ -788,7 +788,7 @@ class GraphCalculator(object):
                                               value=True, padding=6)
         self.toggle_gp.observe(self.on_toggp_change, names='value')
 
-        self.toggle_mp = widgets.ToggleButton(description='Math',
+        self.toggle_mp = widgets.ToggleButton(description='Matrix',
                                               value=True, padding=6)
         self.toggle_mp.observe(self.on_togmp_change, names='value')
 
@@ -819,7 +819,7 @@ class GraphCalculator(object):
         self.gp.widget.visible = self.toggle_gp.value
 
     def on_toglay_change(self, change):
-        self.layout.params.widget.visible = self.toggle_layout.value
+        self.layout.widget.visible = self.toggle_layout.value
 
     def display_str(self, s):
         html = '''<div class="graph-gc"

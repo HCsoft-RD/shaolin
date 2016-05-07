@@ -88,7 +88,7 @@ class ScaleParams(object):
         """Return defaults"""
         return cls.PARAMS
 
-    def __init__(self, default_params=None):
+    def __init__(self, default_params=None, title="Scale parameters"):
         if default_params is None:
             self.params = self.get_default_params()
         else:
@@ -198,7 +198,7 @@ class ScaleParams(object):
         self.line_width_transform.widget.observe(self.on_lwidthtrans_change, names='value')
 
         #LAYOUT
-        title_text = """Scale parameters"""
+        title_text = title
         title_css = """font-size:22px;font-weight:bold;"""
         self.title_w = widgets.HTML(value=self.html_text(title_text, title_css), padding=6)
 
@@ -351,12 +351,12 @@ class LayoutParams(object):
         self.dim.observe(self.on_value_change, names='value')
 
         self.scale = widgets.BoundedFloatText(value=self.params['scale'],
-                                            min=1e-4,
-                                            max=10e4,
-                                            description='Scale:',
-                                            width="100%",
-                                            padding=6
-                                           )
+                                              min=1e-4,
+                                              max=10e4,
+                                              description='Scale:',
+                                              width="100%",
+                                              padding=6
+                                             )
         self.scale.observe(self.on_value_change, names='value')
 
         self.center_display = widgets.Text(description='Center:',
