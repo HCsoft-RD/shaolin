@@ -86,7 +86,7 @@ class ScaleParams(object):
     @classmethod
     def get_default_params(cls):
         """Return defaults"""
-        return cls.PARAMS
+        return cls.PARAMS.copy()
 
     def __init__(self, default_params=None, title="Scale parameters"):
         if default_params is None:

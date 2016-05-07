@@ -41,7 +41,7 @@ class MarkerTranslator(object):
         self.active = active
         self.data = df.copy()
         self.visual = self.default_visual_df()
-        self.scales = sww.ScaleParams(scaler_params)
+        self.scales = sww.ScaleParams(scaler_params.copy())
         #self.cat_cols = cat_cols#TODO improve categorical filtering
         self.data_to_plot()
         self.widget = self.scales.widget

@@ -474,12 +474,14 @@ class GraphPlot(Shaolin):
                                                 free_params=self.node_free_params,
                                                 mapped_params=self.node_marker_params,
                                                 scaler_params=self.node_scaler.params)
-
+        self.node_translator.external_update(self.node_scaler.params)
+        
         self.edge_translator = MarkerTranslator(df=self.edge_mapper,
                                                 active=self.edge_active_params,
                                                 free_params=self.edge_free_params,
                                                 mapped_params=self.edge_marker_params,
                                                 scaler_params=self.edge_scaler.params)
+        self.edge_translator.external_update(self.edge_scaler.params)
 
     def update_source_dfs(self):
         """Datasources for plots managing"""
