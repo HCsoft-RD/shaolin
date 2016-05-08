@@ -210,15 +210,15 @@ class GraphPlot(Shaolin):
         self.toggle_edg.observe(self.on_togedg_change, names='value')
 
         self.toggle_def = widgets.ToggleButton(description='Free',
-                                               value=True, padding=6)
+                                               value=False, padding=6)
         self.toggle_def.observe(self.on_togdef_change, names='value')
 
         self.toggle_graph = widgets.ToggleButton(description='Graph',
-                                                 value=True, padding=6)
+                                                 value=False, padding=6)
         self.toggle_graph.observe(self.on_toggraph_change, names='value')
 
         self.toggle_scale = widgets.ToggleButton(description='Scale',
-                                                 value=True, padding=6)
+                                                 value=False, padding=6)
         self.toggle_scale.observe(self.on_togscale_change, names='value')
 
         self.btn_box = widgets.HBox(children=[self.toggle_nod,
@@ -235,17 +235,17 @@ class GraphPlot(Shaolin):
         sel_title_html = '''<div class="kf-graph-gplot-sel_title" style=" font-size:22px;
                                                         font-weight: bold; 
                                                         text-align:right;">
-                                                        Parameter Selecttor</div>'''
+                                                        Mapper</div>'''
         sel_title = widgets.HTML(value=sel_title_html)
         node_html = '''<div class="kf-graph-gplot-node_sel" style=" font-size:18px;
                                                         font-weight: bold; 
                                                         text-align:right;">
-                                                        Node parameters</div>'''
+                                                        Node mapping</div>'''
         node_sel_title = widgets.HTML(value=node_html)
         edge_html = '''<div class="kf-graph-glot-edge_sel" style=" font-size:18px;
                                                         font-weight: bold; 
                                                         text-align:right;">
-                                                        Edge Parameters</div>'''
+                                                        Edge mapping</div>'''
         edge_sel_title = widgets.HTML(value=edge_html)
 
         ns = self.node_marker_map_sel
@@ -293,15 +293,19 @@ class GraphPlot(Shaolin):
                                                self.sel_box,
                                                self.btn_box,
                                                self.calculate])
+        self.def_box.visible = False
+        self.scaler_box.visible = False
+        self.gcwidget.visible = False
+
 
     def init_free_params_sel(self):
         """Handle plot free params selectors init. A free param means a
         plot parameter that is not mapped to data
         """
         self.node_marker_free_sel = swg.MarkerFreeParams(self.node_free_params,
-                                                         title=('Node Mapping'))
+                                                         title=('Node Free Params'))
         self.edge_marker_free_sel = swg.MarkerFreeParams(self.edge_free_params,
-                                                         title=('Edge Mapping'))
+                                                         title=('Edge Free Params'))
         for param in self.node_free_params:
             getattr(self.node_marker_free_sel, param).observe(self.trigger_update,
                                                               names='value')
