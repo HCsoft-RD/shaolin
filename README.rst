@@ -1,13 +1,15 @@
 =======
 Shaolin
 =======
-********************************************************************************
-Widget-based Interactive visualization sotware for the ipython jupyter notebook.
-********************************************************************************
+***************************************************************************************************************
+Widget-based Interactive visualization sotware for the ipython jupyter notebook. Feedback is really appreciated
+***************************************************************************************************************
 
 Shaolin allows for making complex plot just with a few clicks. It is possible to configure every parameter of diffrerent kinds of plots using ipython widgets and bokeh.
 
 Its still in a really alpha version (not even uploaded to pypy). Can be installed using the setup script included in the code typing "python setup.py install" inside the project folder.
+
+It aims to be a usefull library in the
 
 =============
 Main features
@@ -28,8 +30,19 @@ It is possible to convert arbitrary timeseries into graphs with a few lines of c
 **********
 Graph Plot
 **********
-
 This is a widget intended to visualize the data inside a GraphCalculator.
+
+
+========
+Examples
+========
+
+Check online the examples on how to use Shaolin. All the widgets have been saved as images so you can take a look at them online. 
+
+*****************
+Parameter Widgets
+*****************
+A set of widgets that can be used as stand-alone classes for selecting function parameters or can be combined to make more complex interfaces. 
 
 
 =================
