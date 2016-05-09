@@ -39,10 +39,31 @@ Upcoming features
 *******
 Walkers
 *******
-
-It will be possible to extend the capabilities of the GraphCalculator for making interactive animated graphs in real time. This is really usefull for visualizing correlation matrix time series. 
+It will extend the capabilities of the GraphCalculator for making interactive animated graphs in real time. This is really usefull for visualizing correlation matrix time series. 
 
 ***************
 VPython support
 ***************
 It will be possible to replicate the capabilities of the GraphPlot using VPython as a plotting engine. This will make very easy visualizing interactive 3D graphs in the notebook. 
+
+
+*************************
+Full pandas compatibility
+*************************
+All the plots that support an arbitrary DataFrame will support both Panel and Panel4D data structures.
+
+**********************
+Custom colormap widget
+**********************
+It will be possible to create any arbitrary colormap using widgets for interacting with the Seaborn Colormap interface.
+
+*********************
+Seaborn compatibility
+*********************
+Compatibility for displaying seaborn plots will be added shortly. 
+
+*****
+MplD3
+*****
+Compatibility for mapping data to interactive matplotlib plots using MplD3.
+
