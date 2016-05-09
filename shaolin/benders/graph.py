@@ -319,7 +319,11 @@ class GraphPlot(Shaolin):
 
     def init_mapped_params_sel(self):
         """Handle plot parameter selectors init"""
-        self.node_marker_map_sel = swg.MarkerMappedParams(df=self.gc.node,
+        
+        def_map = self.node_default_map.copy()
+        for col in self.gc.node_metrics.columns:
+            def_map[col] = None
+        self.node_marker_map_sel = swg.MarkerMappedParams(values=self.gc.node_metrics.columns.values.tolist(),
                                                           default_map=self.node_default_map,
                                                           params=self.node_marker_params)
 
@@ -354,7 +358,7 @@ class GraphPlot(Shaolin):
     def init_tooltips(self):
         """This tooltip allows us to map any colum to the """
         cols = self.gc.matrix_panel.to_frame().columns
-        self.node_ttip = swg.SelectMultiple(list(self.gc.node.columns.values), title='Node Tooltip')
+        self.node_ttip = swg.SelectMultiple(self.gc.node_metrics.columns.values.tolist(), title='Node Tooltip')
         self.node_ttip.target.observe(self.trigger_update_tooltip, names='value')
 
         self.edge_ttip = swg.SelectMultiple(list(cols), title='Edge Tooltip')
@@ -488,21 +492,45 @@ class GraphPlot(Shaolin):
         self.edge_translator.external_update(self.edge_scaler.params)
 
     def update_source_dfs(self):
+        def fix_pos_index(edge_pos,edge_vis):
+            edge_pos['From'] = np.nan
+            edge_pos['To'] = np.nan
+            for e in edge_vis.index:
+                if e in edge_pos.index:
+                    edge_pos.loc[e,'From'] = e[0]
+                    edge_pos.loc[e,'To'] = e[1]
+                else:
+                    inv = (e[1],e[0])        
+                    edge_pos.loc[inv,'From'] = e[0]
+                    edge_pos.loc[inv,'To'] = e[1]
+            return edge_pos
         """Datasources for plots managing"""
         node_pos = self.gc.layout.node['2d'].dropna(axis=1).copy()
         node_vis = self.node_translator.visual.copy()
 
         edge_pos = self.gc.layout.edge['2d'].copy()
         edge_vis = self.edge_translator.visual.copy()
-
         edge_pos.index = pd.MultiIndex.from_tuples(edge_vis.index)
-        edge_pos = edge_pos
+
+        edge_pos = fix_pos_index(edge_pos,edge_vis)   
+        ix = edge_vis.index.copy()
+        edge_vis=edge_vis.reset_index()
+        edge_vis.index=ix
+        cols = edge_vis.columns.values
+        cols[:2] = ['From','To']
+        edge_vis.columns = cols
+
         self.node_source = pd.concat([node_vis, node_pos,
                                       self.node_tooltip_data], axis=1).fillna('NaN').copy()
         self.node_source['label'] = self.gc.node.index.values
-        self.edge_source = pd.concat([edge_vis,
-                                      edge_pos],
-                                     axis=1).join(self.edge_tooltip_data).fillna('Nan').copy()
+        
+        self.edge_source = self.edge_tooltip_data.merge(edge_pos,on=['From','To'],
+                                                        left_index=True).merge(edge_vis,
+                                                                               on=['From','To'],
+                                                        left_index=True)
+        #self.edge_source = pd.concat([edge_vis,
+        #                              edge_pos],
+        #                             axis=1).join(self.edge_tooltip_data).fillna('Nan').copy()
 
     def update_active(self, _):
         """A fuction for updating its active dictionary"""
