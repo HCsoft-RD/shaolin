@@ -20,7 +20,7 @@ from .shaolinabc import Shaolin
 
 #output_server('scatter')
 output_notebook()
-class GraphPlot(Shaolin):
+class BokehGraphPlot(Shaolin):
     """This class enables us to map an arbitary pandas DataFrame to aplot"""
     NODE_MARKER_PARAMS = ['line_color',
                           'fill_color',
@@ -124,7 +124,7 @@ class GraphPlot(Shaolin):
         self.edge_scaler = sww.ScaleParams(title='Edge Scale')
         self.node_scaler.external_observe(self.trigger_update)
         self.edge_scaler.external_observe(self.trigger_update)
-        super(GraphPlot, self).__init__()
+        super(BokehGraphPlot, self).__init__()
         self.init_widget()
         self.customize_children_widgets()
         self.init_plot()
@@ -510,7 +510,7 @@ class GraphPlot(Shaolin):
 
         edge_pos = self.gc.layout.edge['2d'].copy()
         edge_vis = self.edge_translator.visual.copy()
-        edge_pos.index = pd.MultiIndex.from_tuples(edge_vis.index)
+        edge_pos.index = pd.MultiIndex.from_tuples(edge_pos.index)
 
         edge_pos = fix_pos_index(edge_pos,edge_vis)   
         ix = edge_vis.index.copy()
@@ -519,13 +519,16 @@ class GraphPlot(Shaolin):
         cols = edge_vis.columns.values
         cols[:2] = ['From','To']
         edge_vis.columns = cols
+        
+        self.edge_tooltip_data = fix_pos_index(self.edge_tooltip_data,edge_vis)
+
 
         self.node_source = pd.concat([node_vis, node_pos,
                                       self.node_tooltip_data], axis=1).fillna('NaN').copy()
         self.node_source['label'] = self.gc.node.index.values
         
-        self.edge_source = self.edge_tooltip_data.merge(edge_pos,on=['From','To'],
-                                                        left_index=True).merge(edge_vis,
+        self.edge_source = edge_pos.merge(edge_vis,on=['From','To'],
+                                                        left_index=True).merge(self.edge_tooltip_data,
                                                                                on=['From','To'],
                                                         left_index=True)
         #self.edge_source = pd.concat([edge_vis,
