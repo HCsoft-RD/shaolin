@@ -7,6 +7,7 @@ Created on Wed Apr 20 10:22:21 2016
 
 import ipywidgets as widgets
 from matplotlib import cm
+import pandas as pd
 
 MARKER_PARAMS = ['x', 'y', 'fill_color', 'marker',
                  'line_color', 'size', 'line_width',
@@ -120,8 +121,8 @@ class DataFrameMappedParameter(object):
 
 class PanelMappedParameter(object):
     """Selector for an arbitrary marker param mapped from a panel insted of a DataFrame"""
-    def __init__(self, panel_shao, name='Parameter', default=None):
-        self.panel_shao = panel_shao
+    def __init__(self, panel, name='Parameter', defaults=(None,None)):
+        self.panel = panel
         html = ('<div class="pa_map_param-name-' + name
                 + '" style=" font-size:22px; text-align:right;">'
                 + name + ':</div>')
@@ -131,10 +132,26 @@ class PanelMappedParameter(object):
                                        height="15px",
                                        padding=6
                                       )
-        ax1 = panel_shao.panel.axes[panel_shao.not_ti[0]]
-        self.ax1 = widgets.Dropdown(options=ax1.values.tolist(), padding=6)
-        ax2 = panel_shao.panel.axes[panel_shao.not_ti[1]]
-        self.ax2 = widgets.Dropdown(options=ax2.values.tolist(), padding=6)
+        #ax1 = panel_shao.panel.axes[panel_shao.not_ti[0]]
+        if defaults is None:
+           defaults=(None,None)
+        if defaults[0] is None:
+            self.ax1 = widgets.Dropdown(options=panel.items.values.tolist(),
+                                        padding=6,
+                                       )
+        else:
+            self.ax1 = widgets.Dropdown(options=panel.items.values.tolist(),
+                                        padding=6,
+                                        value=defaults[0])
+        if defaults[0] is None:
+            self.ax2 = widgets.Dropdown(options=panel.minor_axis.values.tolist(),
+                                        padding=6,
+                                       )
+        else:
+            self.ax2 = widgets.Dropdown(options=panel.minor_axis.values.tolist(),
+                                        padding=6,
+                                        value=defaults[1])
+
         self.namebox = widgets.HBox(children=[self.active, self.name],
                                     width='150px', align='center')
         self.widget = widgets.HBox([self.namebox, self.ax1, self.ax2])
@@ -353,25 +370,33 @@ class MarkerMappedParams(object):
     """
     def __init__(self,
                  default_map=None,
-                 df=None,
+                 pandas=None,
                  values=None,
                  params=None,
                  name=None,
-                 param_type=DataFrameMappedParameter,
                  title='Mapper'):
         """This widget creates a parameter selector"""
 
         #if there is no default map use a dataframe,
         #if there is no df then use values as columns and default marker params
         if default_map is None:
-            if df is None:
+            if pandas is None:
+                param_type=DataFrameMappedParameter
                 self.params = MARKER_PARAMS
                 if values is None:
                     return #TODO error handling
                 else:
                     self.values = values
-            else:
-                self.values = df.columns.values.tolist()
+            elif isinstance(pandas, pd.DataFrame):
+                param_type=DataFrameMappedParameter
+                self.values = pandas.columns.values.tolist()
+                if params is None:
+                    self.params = MARKER_PARAMS
+                else:
+                    self.params = params
+            elif isinstance(pandas, pd.Panel):
+                param_type=PanelMappedParameter
+                self.values = pandas
                 if params is None:
                     self.params = MARKER_PARAMS
                 else:
@@ -384,7 +409,12 @@ class MarkerMappedParams(object):
             self.default_map = default_map
             self.params = list(default_map.keys())
             if values is None:
-                self.values = df.columns.values.tolist()
+                if isinstance(pandas, pd.DataFrame):
+                    param_type=DataFrameMappedParameter
+                    self.values = pandas.columns.values.tolist()
+                elif isinstance(pandas, pd.Panel):
+                    param_type=PanelMappedParameter
+                    self.values = pandas
             else:
                 self.values = values
         #if default map is a list, the list
@@ -392,13 +422,13 @@ class MarkerMappedParams(object):
         elif isinstance(default_map, list):
             self.default_map = dict([(x, None) for x in self.params])
             self.params = default_map
-            self.values = df.columns.values.tolist()
-        #try to infer teh name from the df
+            self.values = pandas.columns.values.tolist()
+        #try to infer the name from the df
         if name is None:
             self.name = 'Columns'
-            if not df is None:
-                if not df.columns.name is None:
-                    self.name = df.columns.name
+            if isinstance(pandas, pd.DataFrame):
+                if not pandas.columns.name is None:
+                    self.name = pandas.columns.name
         else:
             self.name = name
         self.x = param_type(self.values, 'x')
@@ -478,9 +508,9 @@ class MarkerMappedParams(object):
         self.widget = widgets.VBox(children=
                                    [widgets.HBox(self.titlebar)]
                                    +atrwidgets)
-
-        self.x.active.observe(self._on_fixed_change, names='value')
-        self.x.target.observe(self._on_target_change, names='value')
+        if isinstance(pandas, pd.DataFrame):          
+            self.x.active.observe(self._on_fixed_change, names='value')
+            self.x.target.observe(self._on_target_change, names='value')
 
     @property
     def fixed(self):

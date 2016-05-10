@@ -11,6 +11,61 @@ import numpy as np
 
 from .generic import SelectMultiple
 
+class PanelTooltipSelector(object):
+    
+    def __init__(self,panel):
+        
+        self.data = panel.copy()
+        if self.data.items.name is None:
+            items_name = 'items'
+        else:
+            items_name = self.data.items.name
+        if self.data.minor_axis.name is None:
+            minora_name = 'minor_axis'
+        else:
+            minora_name = self.data.minor_axis.name
+        self.title = widgets.HTML(value="""<b style="font-size:22px;">Tooltip attributes</b></br>""")
+        self.title.margin="1.5%"
+        self.axelabel = widgets.HTML(value="""<p style="font-size:18px;font-weight: bold;">Select axe</b></br>""")
+        self.axelabel.margin="5%"
+        self.itemsabel = widgets.HTML(value='<p style="font-size:18px;font-weight: bold;">'+
+                                      items_name+'<br> columns</p> ')
+        self.itemsabel.margin="5%"
+        self.malabel = widgets.HTML(value='<p style="font-size:18px;font-weight: bold;">'+
+                                    minora_name+'<br> columns</p> ')  
+        self.malabel.margin="5%"
+        self.labelsbar = widgets.HBox(children=[self.axelabel,self.itemsabel,self.malabel],align='center')
+        
+        
+        
+        self.items_list = list(self.data.items.values)
+        self.minaxis_list = list(self.data.minor_axis.values)
+        descit = str(items_name+' Columns:')
+        self.items = widgets.SelectMultiple(
+            options=self.items_list,
+            value=self.items_list,
+            #description=descit,
+            width='100%'
+        )
+        self.items.margin="3%"
+        descma = str(minora_name+' Columns:')
+        self.minor_axis = widgets.SelectMultiple(
+            options=self.minaxis_list,
+            value=self.minaxis_list,
+            #description=descma,
+            width='100%'
+        )
+        #self.minor_axis.margin="3%"
+        self.target = widgets.RadioButtons(
+            #description='Tooltip axis:',
+            options={items_name:0, minora_name:1},
+            value=0
+        )
+        self.target.margin="3%"
+        self.selectors = widgets.HBox(children=[self.target,self.items,
+                                                                   self.minor_axis])
+        self.widget =widgets.VBox(children=[self.title,self.labelsbar,self.selectors])
+
 LAYOUT_PARAMS = {'dim':'both',
                  'scale':1,
                  'center':None,
