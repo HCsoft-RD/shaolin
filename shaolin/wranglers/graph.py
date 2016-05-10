@@ -16,14 +16,14 @@ from .context import sww
 
 
 LAYOUT_PARAMS = {'dim':'both',
-                 'scale':1,
+                 'scale':0.5,
                  'center':None,
-                 'weigth':'weight',
+                 'weigth':'M',
                  'fixed':None,
-                 'iterations':5000,
+                 'iterations':1000,
                  'prog':'neato',
                  'layout':'dh_spring_layout',
-                 'k':'corr'}
+                 'k':'k_price'}
 LAYOUTS = {'Circular layout': 'circular_layout',
            'Random layout': 'random_layout',
            'Shell layout':'shell_layout',
@@ -41,7 +41,7 @@ TARGET_OPTIONS = {'Raw':'raw', #Do nothing
 
 MATRIX_PARAMS = {'norm_min':0,
                  'norm_max':1,
-                 'clip_min':1e-5,
+                 'clip_min':1e-10,
                  'clip_max':1e10,
                  'target':[('clip', (1e-5, 1e10))],#f[(fun,(kwargs))]
                 }
@@ -67,7 +67,7 @@ NODE_METRICS = ['betweenness_centrality',
 NODE_TARGET_ATTRS = {'Simetric max':'M',
                      'Correlation':'corr',
                      'Covariance':'cov',
-                     'Market custom':'corr',
+                     'Market custom':'exchange',
                      'k spring':'k_price',
                      'L0':'l0',
                      'Simetric min':'m'}
@@ -329,6 +329,21 @@ class LayoutCalculator(object):
 
     def _fruchterman_reingold(self, A, dim=2, k=None, pos=None, fixed=None,
                               iterations=50):
+                                  
+        def __magics(x,top=1e8,low=1e-18):
+            if  x<1:
+                val = np.sqrt(1-x)/(1-x)
+                return val
+            #elif x<=low:
+            #    return 0
+            else: 
+                return top
+                
+        def __force(M0,dist):
+           
+           M = pd.DataFrame(dist)
+           force = (M.applymap(lambda x: __magics(x)).values-M0)/M0
+           return force
         # Position nodes in adjacency matrix A using Fruchterman-Reingold
         # Entry point for NetworkX graph is fruchterman_reingold_layout()
         try:
@@ -383,8 +398,9 @@ class LayoutCalculator(object):
             for i in range(pos.shape[1]):
                 umatrix[:, :, i] = delta[:, :, i]/distance
             # displacement "force"
-            displacement = np.transpose(np.transpose(umatrix)*k*(distance-A)/A).sum(axis=1)
-
+            #displacement = np.transpose(np.transpose(umatrix)*k*(distance-A)/A).sum(axis=1)
+            displacement = np.transpose(np.transpose(umatrix)*k*__force(A,distance)).sum(axis=1)
+            
             # update positions
             length = np.sqrt((displacement**2).sum(axis=1))
             length = np.where(length < 0.01, 0.1, length)

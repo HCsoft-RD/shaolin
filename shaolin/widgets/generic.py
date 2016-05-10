@@ -120,8 +120,10 @@ class DataFrameMappedParameter(object):
         return self.target.value
 
 class PanelMappedParameter(object):
-    """Selector for an arbitrary marker param mapped from a panel insted of a DataFrame"""
-    def __init__(self, panel, name='Parameter', defaults=(None,None)):
+    """Selector for an arbitrary marker param mapped from a panel insted of
+       a DataFrame. This is stated as a sepparated in order to be able to add
+       custom css and model tweaking in further versions"""
+    def __init__(self, panel, name='Parameter', defaults=(None, None)):
         self.panel = panel
         html = ('<div class="pa_map_param-name-' + name
                 + '" style=" font-size:22px; text-align:right;">'
@@ -134,7 +136,7 @@ class PanelMappedParameter(object):
                                       )
         #ax1 = panel_shao.panel.axes[panel_shao.not_ti[0]]
         if defaults is None:
-           defaults=(None,None)
+            defaults = (None, None)
         if defaults[0] is None:
             self.ax1 = widgets.Dropdown(options=panel.items.values.tolist(),
                                         padding=6,
@@ -143,7 +145,7 @@ class PanelMappedParameter(object):
             self.ax1 = widgets.Dropdown(options=panel.items.values.tolist(),
                                         padding=6,
                                         value=defaults[0])
-        if defaults[0] is None:
+        if defaults[1] is None:
             self.ax2 = widgets.Dropdown(options=panel.minor_axis.values.tolist(),
                                         padding=6,
                                        )
@@ -155,6 +157,52 @@ class PanelMappedParameter(object):
         self.namebox = widgets.HBox(children=[self.active, self.name],
                                     width='150px', align='center')
         self.widget = widgets.HBox([self.namebox, self.ax1, self.ax2])
+
+class Panel4DMappedParameter(object):
+    """Selector for an arbitrary marker param mapped from a Panel4D. This is
+       stated as a sepparated in order to be able to add custom css and model tweaking"""
+
+    def __init__(self, panel4d, name='Parameter', defaults=(None, None, None)):
+        self.panel4d = panel4d
+        html = ('<div class="pa_map_param-name-' + name
+                + '" style=" font-size:22px; text-align:right;">'
+                + name + ':</div>')
+        self.name = widgets.HTML(value=html, height=30, width="110px")
+        self.active = widgets.Checkbox(value=False,
+                                       width="15px",
+                                       height="15px",
+                                       padding=6
+                                      )
+        if defaults is None:
+            defaults = (None, None, None)
+        if defaults[0] is None:
+            self.ax1 = widgets.Dropdown(options=panel4d.labels.values.tolist(),
+                                        padding=6,
+                                       )
+        else:
+            self.ax1 = widgets.Dropdown(options=panel4d.labels.values.tolist(),
+                                        padding=6,
+                                        value=defaults[0])
+        if defaults[1] is None:
+            self.ax2 = widgets.Dropdown(options=panel4d.major_axis.values.tolist(),
+                                        padding=6,
+                                       )
+        else:
+            self.ax2 = widgets.Dropdown(options=panel4d.major_axis.values.tolist(),
+                                        padding=6,
+                                        value=defaults[1])
+        if defaults[2] is None:
+            self.ax3 = widgets.Dropdown(options=panel4d.minor_axis.values.tolist(),
+                                        padding=6,
+                                       )
+        else:
+            self.ax3 = widgets.Dropdown(options=panel4d.minor_axis.values.tolist(),
+                                        padding=6,
+                                        value=defaults[2])
+
+        self.namebox = widgets.HBox(children=[self.active, self.name],
+                                    width='150px', align='center')
+        self.widget = widgets.HBox([self.namebox, self.ax1, self.ax2, self.ax3])
 
 class MarkerFreeParams(object):
     """Manages the values of the parameters that have not been mapped to data
@@ -376,31 +424,39 @@ class MarkerMappedParams(object):
                  name=None,
                  title='Mapper'):
         """This widget creates a parameter selector"""
-
+        self.pandas = pandas
         #if there is no default map use a dataframe,
         #if there is no df then use values as columns and default marker params
         if default_map is None:
             if pandas is None:
-                param_type=DataFrameMappedParameter
+                param_type = DataFrameMappedParameter
                 self.params = MARKER_PARAMS
                 if values is None:
                     return #TODO error handling
                 else:
                     self.values = values
             elif isinstance(pandas, pd.DataFrame):
-                param_type=DataFrameMappedParameter
+                param_type = DataFrameMappedParameter
                 self.values = pandas.columns.values.tolist()
                 if params is None:
                     self.params = MARKER_PARAMS
                 else:
                     self.params = params
-            elif isinstance(pandas, pd.Panel):
-                param_type=PanelMappedParameter
+            elif isinstance(pandas, pd.Panel4D):
+                param_type = Panel4DMappedParameter
                 self.values = pandas
                 if params is None:
                     self.params = MARKER_PARAMS
                 else:
                     self.params = params
+            elif isinstance(pandas, pd.Panel):
+                param_type = PanelMappedParameter
+                self.values = pandas
+                if params is None:
+                    self.params = MARKER_PARAMS
+                else:
+                    self.params = params
+
             self.default_map = dict([(x, None) for x in self.params])
         #if default map is a dict, its keys will
         #be used to infer the params and defaults
@@ -410,11 +466,15 @@ class MarkerMappedParams(object):
             self.params = list(default_map.keys())
             if values is None:
                 if isinstance(pandas, pd.DataFrame):
-                    param_type=DataFrameMappedParameter
+                    param_type = DataFrameMappedParameter
                     self.values = pandas.columns.values.tolist()
-                elif isinstance(pandas, pd.Panel):
-                    param_type=PanelMappedParameter
+                elif isinstance(pandas, pd.Panel4D):
+                    param_type = Panel4DMappedParameter
                     self.values = pandas
+                elif isinstance(pandas, pd.Panel):
+                    param_type = PanelMappedParameter
+                    self.values = pandas
+
             else:
                 self.values = values
         #if default map is a list, the list
@@ -508,37 +568,50 @@ class MarkerMappedParams(object):
         self.widget = widgets.VBox(children=
                                    [widgets.HBox(self.titlebar)]
                                    +atrwidgets)
-        if isinstance(pandas, pd.DataFrame):          
-            self.x.active.observe(self._on_fixed_change, names='value')
-            self.x.target.observe(self._on_target_change, names='value')
+
+        self.x.active.observe(self._on_fixed_change, names='value')
+        self.targets = self.get_targets()
+        for tget in self.targets:
+            getattr(self.x, tget).observe(self._on_target_change, names='value')
 
     @property
     def fixed(self):
         """Alias to return a boolean if the selector is fixed"""
         return self.x.active.value
 
-    def fix_target(self, value):
+    def get_targets(self):
+        if isinstance(self.pandas, pd.Panel):
+            return ['ax1', 'ax2']
+        elif isinstance(self.pandas, pd.Panel4D):
+            return ['ax1', 'ax2', 'ax3']
+        elif isinstance(self.pandas, pd.DataFrame) or self.pandas is None:
+            return ['target']
+
+    def fix_targets(self):
         """All the parameter values will mimic x.value"""
         if self.fixed:
             #fix all the targets to x and leave y free
-            for name in self.params[1:]:
-                getattr(self, name).target.value = value
-            self.x.target.disabled = False
+            for tget in self.targets:
+                for name in self.params[2:]:#do not change y
+                   getattr(getattr(self, name),tget).value = getattr(self.x, tget).value
+                setattr(self.x,tget+'.disabled',False)
+                setattr(self.y,tget+'.disabled',False)
         #else:
             #self.x.target.disabled = True
 
     def disable_target(self, disabled=True):
         """Set all the disable values of the children to disabled"""
-        #Do not disable x and y
-        for name in self.params[1:]:
-            getattr(self, name).target.disabled = disabled
+        for tget in self.targets:
+            #Do not disable x and y
+            for name in self.params[2:]:
+                setattr(getattr(getattr(self, name),tget),'disabled', disabled)
 
     def _on_fixed_change(self, _):
-        self.fix_target(self.x.target.value)
+        self.fix_targets()
         self.disable_target(self.fixed)
 
     def _on_target_change(self, _):
-        self.fix_target(self.x.target.value)
+        self.fix_targets()
 
 class ButtonController(object):
     """Buttons for controlling the walkers. Consists of:
