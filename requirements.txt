@@ -5,4 +5,5 @@ pandas >= 0.18.0
 numpy >= 1.11.0
 planarity
 networkx >= 1.11
-ipywidgets >= 4.1.1
+ipywidgets > 4.1.1
+bokeh

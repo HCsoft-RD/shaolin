@@ -6,9 +6,6 @@ from setuptools import setup, find_packages
 with open('README.rst') as f:
     readme = f.read()
 
-with open('LICENSE') as f:
-    license = f.read()
-
 setup(
     name='shaolin',
     version='0.1',
@@ -18,8 +15,7 @@ setup(
     author_email='oficina@hcsoft.net',
     url='https://github.com/HCsoft-RD/shaolin',
     download_url = 'https://github.com/HCsoft-RD/shaolin/tarball/0.1',
-    keywords = ['dashboards', 'data vis', 'data analysis', 'shaolin']
-    license=license,
+    keywords = ['dashboards', 'data vis', 'data analysis', 'shaolin'],
     packages=['shaolin']
 )
 
