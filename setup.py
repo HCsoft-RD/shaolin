@@ -11,13 +11,15 @@ with open('LICENSE') as f:
 
 setup(
     name='shaolin',
-    version='0.0.1',
-    description='Interactive data visualization for the jupyter notebook',
+    version='0.1',
+    description='Framework for interactive data visualization in the jupyter notebook',
     long_description=readme,
     author='Guillem Duran Ballester(HCSoft)',
     author_email='oficina@hcsoft.net',
     url='https://github.com/HCsoft-RD/shaolin',
+    download_url = 'https://github.com/HCsoft-RD/shaolin/tarball/0.1',
+    keywords = ['dashboards', 'data vis', 'data analysis', 'shaolin']
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=['shaolin']
 )
 
