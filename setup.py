@@ -8,13 +8,13 @@ with open('README.rst') as f:
 
 setup(
     name='shaolin',
-    version='0.1a',
+    version='0.1b',
     description='Framework for interactive data visualization in the jupyter notebook',
     long_description=readme,
     author='Guillem Duran Ballester(HCSoft)',
     author_email='oficina@hcsoft.net',
     url='https://github.com/HCsoft-RD/shaolin',
-    download_url = 'https://github.com/HCsoft-RD/shaolin/tarball/0.1a',
+    download_url = 'https://github.com/HCsoft-RD/shaolin/tarball/0.1b',
     keywords = ['dashboards', 'data vis', 'data analysis', 'shaolin'],
     packages=['shaolin']
 )
