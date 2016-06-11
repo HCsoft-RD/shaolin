@@ -29,33 +29,34 @@ Anyway, it can be installed using the setup script included in the code typing "
 
 The documentation is located in the [examples](https://github.com/HCsoft-RD/shaolin/tree/master/examples) folder.
 
-## ipywidgets based and pydata compatible
+### ipywidgets based and pydata compatible
 
 This framework is build on top of standard pydata libraries like pandas and numpy and uses only the ipywidgets package for the interface management, although
 shaolin provides a simplified interface that extends the ipywidgets capabilities.
 
-## Own syntax for quickly defining new Dashboards 
+### Own syntax for quickly defining new Dashboards 
 
 Shaolin has a simplified syntax that allows to program dashboards consisting on multiple widgets more quickly.
 
 - [Syntax for defining widgets](https://github.com/HCsoft-RD/shaolin/blob/master/examples/Shaolin%20syntax.ipynb)
 - [Dashboard introduction](https://github.com/HCsoft-RD/shaolin/blob/master/examples/Dashboards.ipynb)
 
-## Link different Dashboard to create complex applications
+### Link different Dashboard to create complex applications
 
 It is possible to combine multiple dashboards into a new one in order to perform complex tasks like data analysis or plotting.
 
 - [Dashboard programming tutorial](https://github.com/HCsoft-RD/shaolin/blob/master/examples/Creating%20complex%20Dashboards.ipynb)
 
-## Save and share your dashboards easily
+### Save and share your dashboards easily
 
 You can load and save the state of a dashboard easily with no additional effort.
 
-## No more writing widgets css
+### No more writing widgets css
 
 Modify any visual property of a dashboard interactively using widgets.
-
-## Sample Dashboards
+---------------------
+*********************
+### Sample Dashboards
 
 Shaolin comes batteries included with Dashboard created for performing various standard data analysis tasks that you can use as a base to build your own applications.
 
