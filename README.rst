@@ -12,7 +12,7 @@ Its still in a alpha alpha version, the beta version will be realeased before 17
 PLEASE HELP! I have not been able to upload it to pypy correctly, if someone told me whats wrong with my code it would be really appreciated.
 Anyway, it can be installed using the setup script included in the code typing "python setup.py install" inside the project folder, or if you have the dependencies installed you can just download the folder and improt it on runtime to the python path. (The first cell in every example notebook does that.)
 
-**Dependencies**:
+Dependencies:
 - six.
 - numpy.
 - pandas.
