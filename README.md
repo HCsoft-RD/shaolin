@@ -68,7 +68,7 @@ Use a colormap picker capable of creating any matplotlib and seaborn colormap or
 
 Plot an interactive bokeh scatter plot with tooltips from any pandas DataFrame, Panel or Panel4D. You will be able to modify any visual property of the plot with just a few clicks. I bet you wont need to program another scatter plot after trying this ;)
 
--[Scatter plot introduction](https://github.com/HCsoft-RD/shaolin/blob/master/examples/Scatter%20Plot%20introduction.ipynb)
+- [Scatter plot introduction](https://github.com/HCsoft-RD/shaolin/blob/master/examples/Scatter%20Plot%20introduction.ipynb)
 
 ### Networkx compatibility
 We have dashboards that map the networkx interface to calculate any graph metric, any graph layout and the capability of converting time series correlation matrices into graphs.
@@ -89,8 +89,8 @@ These Dashboards provide everything you need to create new interactive plots wit
 
 I hope most of there are available in the beta release.
 
-##Walkers
-*******
+###Walkers
+
 It will extend the capabilities of the GraphCalculator for making interactive animated graphs in real time. This is really usefull for visualizing correlation matrix time series. 
 
 
