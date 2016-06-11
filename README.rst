@@ -2,19 +2,32 @@
 Shaolin
 =======
 ***************************************************************************************************************
-Widget-based Interactive visualization sotware for the ipython jupyter notebook. Feedback is really appreciated
+Framework for interactive widget-based dashboards programming. Feedback is really appreciated
 ***************************************************************************************************************
 
-Shaolin allows for making complex plot just with a few clicks. It is possible to configure every parameter of diffrerent kinds of plots using ipython widgets and bokeh.
+Shaolin (Structure Helper for dAshbOard LINking) is an ipywidgets based framework that allows to create interactive dashboards that can be linked with each other to build interactive applications.
 
-Its still in a really alpha version (not even uploaded to pypy). Can be installed using the setup script included in the code typing "python setup.py install" inside the project folder.
+Its still in a alpha alpha version, the beta version will be realeased before 17 july.
 
-It aims to be a usefull library in the
+PLEASE HELP! I have not been able to upload it to pypy correctly, if someone told me whats wrong with my code it would be really appreciated.
+Anyway, it can be installed using the setup script included in the code typing "python setup.py install" inside the project folder, or if you have the dependencies installed you can just download the folder and improt it on runtime to the python path. (The first cell in every example notebook does that.)
+
+**Dependencies**:
+- six.
+- numpy.
+- pandas.
+- planarity.
+- networkx.
+- bokeh.
+- seaborn.
+- vpython (not yet, but really soon)
+
 
 =============
 Main features
 =============
 
+The documentation is located in the `examples <http://www.python.org/>`_ folder.
 ************
 Scatter plot
 ************
