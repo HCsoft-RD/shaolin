@@ -54,9 +54,10 @@ You can load and save the state of a dashboard easily with no additional effort.
 ### No more writing widgets css
 
 Modify any visual property of a dashboard interactively using widgets.
----------------------
+
+
 *********************
-### Sample Dashboards
+# Sample Dashboards
 
 Shaolin comes batteries included with Dashboard created for performing various standard data analysis tasks that you can use as a base to build your own applications.
 
