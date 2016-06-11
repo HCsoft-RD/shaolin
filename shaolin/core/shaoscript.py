@@ -100,7 +100,7 @@ def decode_param(string):
     if key in  ['o', 'opt', 'options']:
         name = 'options'
         val = ast.literal_eval(val)
-    elif key in  ['d', 'description']:
+    elif key in  ['d', 'description', 'D']:
         name = 'description'
         val = str(val)
     elif key == 'id':
@@ -117,15 +117,16 @@ def decode_param(string):
             val = True
     elif key in ['ori', 'orientation']:
         name = 'orientation'
-        if val in ['v', 'vertical']:
+        if str(val) in ['v', 'vertical']:
             val = 'vertical'
-        if val in ['h', 'horizontal']:
+        if str(val) in ['h', 'horizontal']:
             val = 'horizontal'
     elif key in ['n', 'name', 'N']:
         name = 'name'
         val = val
     elif key in ['val', 'value']:
         name = 'value'
+        #val = ast.literal_eval(val)
         val = val
     elif key in ['mode', 'm']:
         name = 'mode'

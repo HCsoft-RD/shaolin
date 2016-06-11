@@ -13,7 +13,7 @@ class Dashboard(StatelessDashboard):
     """Clash for managing arbitrary Dashboards"""
     def __init__(self,dash, state=None, **kwargs):
         StatelessDashboard.__init__(self, dash, **kwargs)
-        self.state = self._load_state(state)
+        self._state = self._load_state(state)
     
     
     def _load_state(self, state):
@@ -27,10 +27,17 @@ class Dashboard(StatelessDashboard):
             self.apply_state(state)
         return state
         
-    
+    @property
+    def state(self):
+        return self._state
+    @state.setter
+    def state(self, val):
+        self._state = val
+        self.apply_state()
     def _update_state(self, _=None):
-        self.state = self._state_manager.output
-        
+        self._state = self._state_manager.output
+
+    @property
     def state_manager(self):
         self._state_manager = LayoutHacker(self)
         self._state_manager.observe(self._update_state)
@@ -40,17 +47,19 @@ class Dashboard(StatelessDashboard):
     def apply_state(self, state_dict=None):
         "loads a generated state dict and applies it to the dashboard"
         if state_dict is None:
-            state_dict = self.state
+            state_dict = self._state
         if state_dict is None:
             self.state_manager()
         for attr in self.mode_dict['all']:
             for css_tra, items_dict in state_dict[attr]['css_traits'].items():
                 for widget,val in items_dict.items():
                     layout = getattr(getattr(self, attr), widget).layout
-                    setattr(layout,css_tra,val)
+                    if val != '':
+                        setattr(layout,css_tra,val)
             for tget_attr, val in state_dict[attr]['widget_attrs'].items():
                 tget_wid = getattr(self, attr).target
-                setattr(tget_wid, tget_attr, val)
+                if val != '':
+                    setattr(tget_wid, tget_attr, val)
 
 class ToggleMenu(Dashboard):
     def __init__(self,

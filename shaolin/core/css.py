@@ -336,28 +336,30 @@ class WidthAndHeight(StatelessDashboard):
                        'min_height':('','target'),
                        'max_height':('','target'),
                       }
-        StatelessDashboard.__init__(self,dash,mode=mode, func=self.update, **kwargs)
+        StatelessDashboard.__init__(self,dash,mode=mode, **kwargs)
+        self.observe(self.update)
         self.height_val.name_label.text = 'Height'
         self.width_val.name_label.text = 'Width'
         
-    def update(self, _=None, **kwargs):
+    def update(self, _=None):
+
         if self.toggle_val.value == 'val':
             self.output['width'] = (self.width_val.output['value'],
-                                    kwargs['width_val']['css_target'])
+                                    self.kwargs['width_val']['css_target'])
             self.output['height'] = (self.height_val.output['value'],
-                                     kwargs['height_val']['css_target'])
+                                     self.kwargs['height_val']['css_target'])
             
         elif self.toggle_val.value == 'max':
             self.output['max_width'] = (self.width_val.output['value'],
-                                        kwargs['width_val']['css_target'])
+                                        self.kwargs['width_val']['css_target'])
             self.output['max_height'] = (self.height_val.output['value'],
-                                         kwargs['height_val']['css_target'])
+                                        self.kwargs['height_val']['css_target'])
             
         elif self.toggle_val.value == 'min':
             self.output['min_width'] = (self.width_val.output['value'],
-                                        kwargs['width_val']['css_target'])
+                                        self.kwargs['width_val']['css_target'])
             self.output['min_height'] = (self.height_val.output['value'],
-                                        kwargs['height_val']['css_target'])
+                                       self.kwargs['height_val']['css_target'])
 
 class WidgetAttributes(StatelessDashboard):
     
@@ -461,13 +463,22 @@ class WidgetAttributes(StatelessDashboard):
                          'visible':self.visible_chk.value}
             
         elif isinstance(self._data_widget.target, sliders):
-            self.output = {'orientation':self.orientation.value,
-                           'readout':self.readout.visible,
-                           'readout_format': self.ro_format.value,
-                           'color':self.color.value,
-                           'slider_color':self.slider_color.value,
-                           'visible':self.visible_chk.value,
-                          }
+            #BUG FIX FROM IPYWIEDGETS not allowing to set the readout format of a range slider
+            if isinstance(self._data_widget.target, (wid.FloatRangeSlider,wid.IntRangeSlider)):
+                self.output = {'orientation':self.orientation.value,
+                               'readout':self.readout.visible,
+                               'color':self.color.value,
+                               'slider_color':self.slider_color.value,
+                               'visible':self.visible_chk.value,
+                              }
+            else:
+                self.output = {'orientation':self.orientation.value,
+                               'readout':self.readout.visible,
+                               'readout_format': self.ro_format.value,
+                               'color':self.color.value,
+                               'slider_color':self.slider_color.value,
+                               'visible':self.visible_chk.value,
+                              }
 
         elif isinstance(self._data_widget.target, wid.Valid):
             self.output = {'readout_format': self.ro_format.value,
@@ -592,11 +603,11 @@ class LayoutHacker(StatelessDashboard):
     
     
     def save_layout(self, _=None):
-        print("Saving layout")
         output = open(self.file_name.value, 'wb')
         # Pickle dictionary using protocol 0.
         pickle.dump(self.output, output)
         output.close()
+        print("Layout saved")
         
         
     def update_output_dict(self):

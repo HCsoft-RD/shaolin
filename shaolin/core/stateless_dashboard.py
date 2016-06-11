@@ -5,32 +5,33 @@ Created on Wed May 25 15:26:23 2016
 @author: sergio
 """
 import traitlets
-from .shaoscript import shaoscript
-from .context import dashboard as dash
+import shaolin.core as sc
+import shaolin.core.shaoscript as scpt
 class StatelessDashboard(object):
     """Clash for managing arbitrary Dashboards"""
-    def __init__(self, dash, func=None, mode='active', name=None, state=None):
+    def __init__(self, dashboard, func=None, mode='active', name=None):
         
         self.func = func
-        self.dash = dash
+        self.dashboard = dashboard
         self.mode = mode
         if not name is None:
             self.name = name
-        elif hasattr(dash, 'name'):
-            self.name = dash.name
+        elif hasattr(dashboard, 'name'):
+            self.name = dashboard.name
         else:
-            self.name = self.name_from_shaoscript(dash[0])
+            self.name = self.name_from_shaoscript(dashboard[0])
         self.mode_dict = {'active' : [],
                           'passive': [],
                           'interactive' : [],
                           'all':[]
                          }
-        self.init_dash(self.dash)
-        self.link_children(self.dash)
+        self._init_dash(self.dashboard)
+        self._link_children(self.dashboard)
         if not self.func is None:
             self.observe(self.interact)
+        #self.output = self.kwargs
 
-    def init_dashboard(self, dashboard):
+    def _init_dashboard(self, dashboard):
         """Integrates a child Dashboard as an attribute of the current Dashboard"""
         setattr(self, dashboard.name, dashboard)
         if dashboard.mode == 'interactive':
@@ -40,9 +41,9 @@ class StatelessDashboard(object):
         else:
             self.mode_dict['active'] += [dashboard.name]
 
-    def init_toggle_menu(self, children, kwargs):
+    def _init_toggle_menu(self, children, kwargs):
         """Integrates a child ToggleMenu as an attribute of the current Dashboard"""
-        dashboard = dash.ToggleMenu(children)
+        dashboard = sc.dashboard.ToggleMenu(children)
         if 'name' in kwargs.keys():
             dashboard.name = kwargs['name']
         setattr(self, dashboard.name, dashboard)
@@ -53,9 +54,9 @@ class StatelessDashboard(object):
         else:
             self.mode_dict['active'] += [dashboard.name]
 
-    def init_widget(self, shao, kwargs):
+    def _init_widget(self, shao, kwargs):
         """Integrates a child Widget as an attribute of the current Dashboard"""
-        widget = shaoscript(shao, kwargs)
+        widget = scpt.shaoscript(shao, kwargs)
         try:
             setattr(self, widget.name, widget)
         except Exception as e:
@@ -77,7 +78,7 @@ class StatelessDashboard(object):
 
     def interact(self, _):
         """Apply the dashboard kwargs to the dashboard function"""
-        self.func(**self.kwargs)
+        self.func(self.output)
 
     def link(self, name_1, name_2):
         """Same as trailets but applied to Dashboard attribute names"""
@@ -135,7 +136,7 @@ class StatelessDashboard(object):
     @property
     def widget(self):
         """Alias for easy access to the Dashboard main widget"""
-        return getattr(self, self.name_from_shaoscript(self.dash[0])).widget
+        return getattr(self, self.name_from_shaoscript(self.dashboard[0])).widget
 
     @staticmethod
     def name_from_shaoscript(string):
@@ -145,7 +146,7 @@ class StatelessDashboard(object):
         name = None
         for p in params:
             pname = p.split('=')[0]
-            if pname in ['d', 'desc', 'description']:
+            if pname in ['d', 'desc', 'description', 'D']:
                 desc = p.split('=')[1]
             elif pname in ['n', 'name', 'N']:
                 name = p.split('=')[1]
@@ -168,8 +169,8 @@ class StatelessDashboard(object):
             children = None
             return shaoscrpt, kwargs, children
 
-        if shaolist[0] is dash.ToggleMenu:
-            shaoscrpt = dash.ToggleMenu
+        if shaolist[0] is sc.dashboard.ToggleMenu:
+            shaoscrpt = sc.dashboard.ToggleMenu
             kwargs = {}
             children = shaolist[1]
         elif isinstance(shaolist, str):
@@ -190,8 +191,8 @@ class StatelessDashboard(object):
         elif len(shaolist) == 2:
             #[(shaoscript, kwargs), children]
             if isinstance(shaolist[0], tuple):
-                if shaolist[0][0] is dash.ToggleMenu:
-                    shaoscrpt = dash.ToggleMenu
+                if shaolist[0][0] is sc.dashboard.ToggleMenu:
+                    shaoscrpt = sc.dashboard.ToggleMenu
                     kwargs = shaolist[0][1]
                     children = shaolist[1]
                     return shaoscrpt, kwargs, children
@@ -213,7 +214,7 @@ class StatelessDashboard(object):
         for name in self.mode_dict['interactive']:
             getattr(self, name).observe(func, names=names)
 
-    def link_children(self, shaolist):
+    def _link_children(self, shaolist):
         """Creates the dashboard structure linking each children with its parent"""
         shaoscrpt, kwargs, children = self.read_shaolist(shaolist)
         if children is None:
@@ -227,19 +228,19 @@ class StatelessDashboard(object):
                 else:
                     cname = self.name_from_shaoscript(shao_c)
                 getattr(self, name).target.children += (getattr(self, cname).widget,)
-                self.link_children(child)
+                self._link_children(child)
 
-    def init_dash(self, value):
+    def _init_dash(self, value):
         """Creates all the children Widgets and dashboards the current Dashboard will have"""
         shaoscrpt, kwargs, children = self.read_shaolist(value)
         if shaoscrpt is None:
-            self.init_dashboard(value)
-        elif shaoscrpt is dash.ToggleMenu:
-            self.init_toggle_menu(children, kwargs)
+            self._init_dashboard(value)
+        elif shaoscrpt is sc.dashboard.ToggleMenu:
+            self._init_toggle_menu(children, kwargs)
         else:
-            self.init_widget(shaoscrpt, kwargs)
+            self._init_widget(shaoscrpt, kwargs)
         if children is None:
             return
         for child in children:
-            self.init_dash(child)
+            self._init_dash(child)
 

@@ -427,12 +427,13 @@ class ArraySlicer(Dashboard):
                 ]
                ]    
         Dashboard.__init__(self, dash, mode='interactive', **kwargs)
+        
         if self._ast_vals:
             self.dd_selector.target.options = [str(x) for x in data]
             self.sel_sli.target.options = [str(x) for x in data]
         self.sel_sli.target.continuous_update=False
         self.start_slider.target.continuous_update=False
-        self.dd_selector.target.layout.width = "100%"
+        self.dd_selector.target.layout.width = "12em"
         self.dd_selector.observe(self._link_dropdown)
         self.sel_sli.observe(self._link_sel_sli)
         self.start_slider.observe(self._link_start_sli)

@@ -385,7 +385,10 @@ class PlotCmapFilter(Dashboard):
         else:
             columns = active_data.columns
         
-        empty_df = pd.DataFrame(index=self.data_scaler.output.index, columns=columns)
+        if isinstance(self._data, pd.DataFrame):
+            empty_df = pd.DataFrame(index=self._data.index, columns=columns)
+        else:
+            empty_df = pd.DataFrame(index=self.data_scaler.output.index, columns=columns)
         if self.map_chk.value:
             self.output = empty_df.combine_first(active_data).fillna(self.default_color.value)
         else:
@@ -393,7 +396,7 @@ class PlotCmapFilter(Dashboard):
         self.output.columns = [self._description]
 
 class PlotMapper(ToggleMenu):
-    mapper_dict = {'x':{'max':1.0,
+    mapper_dict = {'x':{'max':100.0,
                     'min':0.0,
                     'step':0.1,
                     'high':1.,
@@ -402,7 +405,7 @@ class PlotMapper(ToggleMenu):
                     'map_data':True,
                     'fixed_active':True,
                    },
-               'y':{'max':1.0,
+               'y':{'max':100.0,
                     'min':0.0,
                     'step':0.1,
                     'high':1.,
@@ -453,6 +456,10 @@ class PlotMapper(ToggleMenu):
     
     def __init__(self, data, mapper_dict=None, **kwargs):
         self._data = data
+        if isinstance(self._data, pd.DataFrame):
+            ix = self._data.index
+            self._data = self._data.reset_index()
+            self._data.index = ix
         if mapper_dict is None:
             self.mapper_dict = self.get_default_mapper_dict()
         else:

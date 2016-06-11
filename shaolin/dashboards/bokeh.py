@@ -9,10 +9,11 @@ from IPython.core.display import display
 from bokeh.models import HoverTool
 import bokeh.models.sources as bks
 from bokeh.plotting import figure, show
-from bokeh.io import  push_notebook
-
+from bokeh.io import  push_notebook, output_notebook
+from bokeh.embed import notebook_div
 from shaolin.core.dashboard import Dashboard, ToggleMenu
 from shaolin.dashboards.plot_mappers import PlotMapper
+from shaolin.core.shaoscript import shaoscript
 
 class BokehDataFrameTooltip(Dashboard):
     
@@ -49,6 +50,7 @@ class BokehDataFrameTooltip(Dashboard):
 class ScatterPlot(ToggleMenu):
     
     def __init__(self, data,name='scatter_plot', **kwargs):
+        output_notebook(hide_banner=True)
         self._data = data
         mapper = PlotMapper(data, button_type='ddown',button_pos='top', name='mapper', mode='interactive')
         if isinstance(data, pd.DataFrame):
@@ -56,11 +58,20 @@ class ScatterPlot(ToggleMenu):
             ToggleMenu.__init__(self, children=[mapper,tooltip], name=name,**kwargs)
         else:
             ToggleMenu.__init__(self, children=[mapper], name=name,**kwargs)
+        self.buttons.value = 'mapper'
+        self.mapper.buttons.value = 'y'
+        if isinstance(self._data,pd.DataFrame):
+            self.mapper.y.data_slicer.columns_slicer.dd_selector.value =\
+                self.mapper.y.data_slicer.columns_slicer.dd_selector.target.options[1]
         self.observe(self.update)
         self.update_source_df()
         self.init_plot()
         self.update()
-        
+    
+    @property
+    def data(self):
+        return self._data    
+    
     def update_source_df(self):
         """Datasources for plots managing"""
         if isinstance(self._data, pd.DataFrame):
@@ -120,6 +131,12 @@ class ScatterPlot(ToggleMenu):
     def show(self):
         return display(self.widget, show(self.plot))
     
+    @property
+    def snapshot(self, name='bokeh_scatter'):
+      html =  notebook_div(self.plot)
+      widget = shaoscript('html$N='+name)
+      widget.value = html
+      return widget
 
 class GraphPlotBokeh(ToggleMenu):
     

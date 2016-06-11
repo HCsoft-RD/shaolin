@@ -98,10 +98,12 @@ class Widget(object):
     @property
     def value(self):
         """Get the value of the wrapped widget"""
-        return self.target.value
+        if hasattr(self.target, 'value'):
+            return self.target.value
     @value.setter
     def value(self, val):
-        self.target.value = val
+        if hasattr(self.target, 'value'):
+            self.target.value = val
 
     @property
     def options(self):
@@ -161,7 +163,7 @@ class Widget(object):
     def orientation(self, val):
         """Same interface as widgets but easier to iterate"""
         try:
-            self.widget.orientation = val
+            self.target.orientation = val
         except AttributeError:
             pass
 

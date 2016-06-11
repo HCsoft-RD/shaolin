@@ -41,6 +41,10 @@ class ColormapPicker(Dashboard):
         self.close_btn.observe(self._on_close_click)
         self._on_close_click()
     
+    def map_data(self, data, hex=None):
+        if hex is None:
+            hex = self.master_palette._hex
+        return self.master_palette.map_data(data, hex)    
     
     def _on_cmap_click(self,_=None):
         self.palette_col.visible = True
@@ -179,7 +183,8 @@ class SeabornColor(Dashboard):
 
 class MasterPalette(ToggleMenu):
 
-    def __init__(self, **kwargs):
+    def __init__(self, hex=False, **kwargs):
+        self._hex = hex
         colorbrewer = ColorBrewerPalette(name='colorbrewer')
         diverging = DivergingPalette(name='diverging')
         sequential = SequentialPalette(name='sequential')
@@ -199,6 +204,9 @@ class MasterPalette(ToggleMenu):
         self.cmap = self.diverging.cmap
         self.observe(self.update_masterpalette)
         self.update_masterpalette()
+        selected = getattr(self, self.buttons.value)
+        selected.as_cmap.value = False
+        selected.as_cmap.value = True
         #self.buttons.observe(self._display_one)
         #self._display_one()
     def _hide_all(self):
@@ -246,8 +254,10 @@ class MasterPalette(ToggleMenu):
         self.pal = getattr(self,val).pal
         self.cmap = getattr(self,val).cmap
 
-    def map_data(self, data, hex=False):
+    def map_data(self, data, hex=None):
         "Maps an array of data according to the selected palette/colormap"
+        if hex is None:
+            hex = self._hex
         selected = getattr(self, self.buttons.value)
         Ma = np.max(data)
         mi = np.min(data)
@@ -327,7 +337,7 @@ class SeabornPalette(SeabornColor):
         self.update()
         self.update_fig_widget()
         
-        
+
 
     def update(self, _=None):
         #color_palette(palette=None, n_colors=None, desat=None)

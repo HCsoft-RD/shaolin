@@ -6,23 +6,14 @@ Created on Mon Jun  6 12:39:57 2016
 """
 
 import numpy as np
-import ipywidgets as widgets
-from IPython.core.display import display
-from IPython.display import clear_output
-from bokeh.models import HoverTool
-import bokeh.models.sources as bks
-from bokeh.io import output_notebook, push_notebook
-from bokeh.plotting import figure, show
+
 import pandas as pd
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 import planarity
 
 from shaolin.core.dashboard import Dashboard
-from shaolin.core.dashboard import Dashboard, ToggleMenu
-from shaolin.core.shaoscript import shaoscript
-from shaolin.dashboards.plot_mappers import PlotMapper
-from shaolin.dashboards.bokeh import BokehDataFrameTooltip
+
 
 class LayoutParams(Dashboard):
     """Widget for managing the parameters necessary for the layout calculator.
