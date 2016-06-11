@@ -6,7 +6,7 @@ Created on Wed May 25 15:26:23 2016
 """
 import traitlets
 import shaolin.core as sc
-import shaolin.core.shaoscript as scpt
+from shaolin.core import shaoscript as scpt
 class StatelessDashboard(object):
     """Clash for managing arbitrary Dashboards"""
     def __init__(self, dashboard, func=None, mode='active', name=None):
