@@ -16,6 +16,6 @@ setup(
     url='https://github.com/HCsoft-RD/shaolin',
     download_url = 'https://github.com/HCsoft-RD/shaolin/tarball/0.1b',
     keywords = ['dashboards', 'data vis', 'data analysis', 'shaolin'],
-    packages=['shaolin']
+    packages=find_packages(exclude=['docs', 'examples', 'tests'])
 )
 
