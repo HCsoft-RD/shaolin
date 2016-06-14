@@ -220,15 +220,11 @@ class GraphPlotBokeh(ToggleMenu):
                        'fill_color':{'default_color':'#EDB021','map_data':False,'step':0.05,'min':0.0,'low':0.0}
                       }
         gc.name = 'gc'
-        #gc.mode = 'interactive'
-        dft = gc.edge.to_frame().reset_index()
-        ti = list(zip(dft.minor.values,dft.major.values))
-        dft.index = ti
-        dft = dft.drop(['major','minor'],axis=1)
-        edge_mapper_data = dft.ix[gc.G.edges()].copy()
+        output_notebook(hide_banner=True)
+        edge_mapper_data = self.prepare_edge_mapper_data(gc)
         node_mapper = PlotMapper(gc.node, mapper_dict=node_mapper_dict, button_type='ddown',button_pos='top', name='node_mapper', mode='interactive')
         edge_mapper = PlotMapper(edge_mapper_data, mapper_dict=edge_mapper_dict, button_type='ddown',button_pos='top', name='edge_mapper', mode='interactive')
-        node_tooltip_data = gc.node_metrics.combine_first(gc.node.T).T
+        node_tooltip_data = gc.node.combine_first(gc.node_metrics.T)
         node_tooltip = BokehDataFrameTooltip(node_tooltip_data, name='node_tooltip')
         edge_tooltip = BokehDataFrameTooltip(edge_mapper_data, name='edge_tooltip')
         ToggleMenu.__init__(self,
@@ -245,6 +241,13 @@ class GraphPlotBokeh(ToggleMenu):
         self.update()
         self._init_layout()
     
+    def prepare_edge_mapper_data(self,gc):
+        dft = gc.edge.to_frame().reset_index()
+        ti = list(zip(dft.minor.values,dft.major.values))
+        dft.index = ti
+        dft = dft.drop(['major','minor'],axis=1)
+        return dft.ix[gc.G.edges()].copy()
+        
     def _init_layout(self):
         params = ['size', 'line_width', 'fill_alpha', 'line_alpha', 'line_color', 'fill_color']
         for target in ['node','edge']:
@@ -370,5 +373,12 @@ class GraphPlotBokeh(ToggleMenu):
         self.plot.add_tools(HoverTool(tooltips=n_ttip, renderers=[nod]))
         self.plot.add_tools(HoverTool(tooltips=e_ttip, renderers=[edg_center]))
         
+    @property
+    def snapshot(self, name='bokeh_scatter'):
+      html =  notebook_div(self.plot)
+      widget = shaoscript('html$N='+name)
+      widget.value = html
+      return widget
+    
     def show(self):
         return display(self.widget, show(self.plot))

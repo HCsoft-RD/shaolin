@@ -457,9 +457,16 @@ class PlotMapper(ToggleMenu):
     def __init__(self, data, mapper_dict=None, **kwargs):
         self._data = data
         if isinstance(self._data, pd.DataFrame):
-            ix = self._data.index
-            self._data = self._data.reset_index()
-            self._data.index = ix
+            if isinstance(self._data.index.values[0], (list,tuple,str)):
+                old = self._data.index
+                ix = [str(x) for x in self._data.index.values]
+                self._data.index = ix
+                self._data = self._data.reset_index()
+                self._data.index = old
+            else:
+                ix = self._data.index
+                self._data = self._data.reset_index()
+                self._data.index = ix
         if mapper_dict is None:
             self.mapper_dict = self.get_default_mapper_dict()
         else:
