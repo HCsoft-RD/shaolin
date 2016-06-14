@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
 
 setup(
@@ -16,6 +16,6 @@ setup(
     url='https://github.com/HCsoft-RD/shaolin',
     download_url = 'https://github.com/HCsoft-RD/shaolin/tarball/0.1b',
     keywords = ['dashboards', 'data vis', 'data analysis', 'shaolin'],
-    packages=['shaolin']
+    packages=find_packages(exclude=['docs', 'examples', 'tests'])
 )
 
