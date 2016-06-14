@@ -87,7 +87,7 @@ These Dashboards provide everything you need to create new interactive plots wit
 
 
 
-## Upcoming features
+# Upcoming features
 
 I hope most of there are available in the beta release.
 
