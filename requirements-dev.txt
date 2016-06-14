@@ -1,3 +1,6 @@
+nose
+sphinx
+
 pandas >= 0.18.0
 numpy >= 1.11.0
 planarity
