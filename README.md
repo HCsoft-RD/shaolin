@@ -9,11 +9,8 @@
 
 Its still in a alpha alpha version, the beta version will be realeased before 17 july.
 
-**PLEASE HELP!** I have not been able to upload it to pypi correctly, if someone told me whats wrong with my code it would be really appreciated.
-Anyway, it can be installed using the setup script included in the code typing "python setup.py install" inside the project folder, or if you have the dependencies installed you can just download the folder and improt it on runtime to the python path. (The first cell in every example notebook does that.)
+**PLEASE HELP!** I think the package can be installed using setup.py or downloading it from pip typing: **pip install shaolin**. I'm not sure 100% if it works as it is the first time I upload a package. Feedback is appreciated.
 
-**BUG DISCLAIMER** I've been told the examples throw some ImportErrors. I have been able to use the examples in my computer installing the package
-using the setup.py, but today I am going to test it in an isolated environement to fix any installation issue. As always, any feedback will be much appreciated.
 
 ### Dependencies:
 - six.
