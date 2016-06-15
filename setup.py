@@ -9,7 +9,7 @@ with open('README.md') as f:
 setup(
     name='shaolin',
     version='0.1b',
-    description='Framework for interactive data visualization in the jupyter notebook',
+    description='Framework for interactive dashboards framework for the jupyter notebook',
     long_description=readme,
     author='Guillem Duran Ballester(HCSoft)',
     author_email='oficina@hcsoft.net',
