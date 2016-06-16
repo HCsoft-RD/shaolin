@@ -3,7 +3,7 @@ sphinx
 
 pandas >= 0.18.0
 numpy >= 1.11.0
-planarity==0.3.1
+#planarity==0.3.1
 networkx >= 1.11
 ipywidgets > 4.1.1
 bokeh
