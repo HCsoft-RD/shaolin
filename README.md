@@ -17,7 +17,7 @@ Its still in a alpha alpha version, the beta version will be realeased before 17
 - numpy.
 - pandas.
 - planarity.
-- networkx. (Disables byy default because build is broken, on linux version 0.3.1 should work)
+- networkx.
 - bokeh.
 - seaborn.
 - vpython (not yet, but really soon)
