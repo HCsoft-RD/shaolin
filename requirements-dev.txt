@@ -1,6 +1,6 @@
 nose
 sphinx
-
+planarity
 pandas >= 0.18.0
 numpy >= 1.11.0
 networkx >= 1.11
