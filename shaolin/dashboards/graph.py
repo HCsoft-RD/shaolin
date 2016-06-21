@@ -633,7 +633,7 @@ class MatrixParams(Dashboard):
                                   'scale':(self.norm_min.value,
                                            self.norm_max.value),
                                   'zscore':None,
-                                  'distance':None,
+                                  'compute_distance':None,
                                  }
         self.output = self.params['target']
 
