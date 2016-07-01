@@ -5,7 +5,7 @@ Created on Wed Jun  1 23:37:47 2016
 @author: Guillem Duran Ballester for HCSoft
 """
 import pandas as pd
-from IPython.core.display import display
+from IPython.core.display import display, clear_output
 from bokeh.models import HoverTool
 import bokeh.models.sources as bks
 from bokeh.plotting import figure, show
@@ -64,10 +64,18 @@ class ScatterPlot(ToggleMenu):
             self.mapper.y.data_slicer.columns_slicer.dd_selector.value =\
                 self.mapper.y.data_slicer.columns_slicer.dd_selector.target.options[1]
         self.observe(self.update)
+        self.mapper.marker.marker_type.observe(self._on_marker_change)
+        
         self.update_source_df()
         self.init_plot()
         self.update()
     
+    def _on_marker_change(self, _=None):
+        clear_output()
+        self.init_plot()
+        self.update()
+        return display(show(self.plot))
+        
     @property
     def data(self):
         return self._data    
@@ -123,7 +131,8 @@ class ScatterPlot(ToggleMenu):
                                      line_alpha='line_alpha',
                                      size='size',
                                      line_width='line_width',
-                                     #marker=marker
+                                     marker=self.mapper.marker.marker_type.value
+                                       
                                     )
         if isinstance(self._data, pd.DataFrame):
             self.plot.add_tools(HoverTool(tooltips=tooltip, renderers=[_scatter]))
@@ -236,6 +245,8 @@ class GraphPlotBokeh(ToggleMenu):
         
         self.observe(self.update)
         self.gc.calculate.observe(self.update)
+        self.node_mapper.marker.marker_type.observe(self._on_marker_change)
+        self.edge_mapper.marker.marker_type.observe(self._on_marker_change)
         self.update_source_df()
         self.init_plot()
         self.update()
@@ -323,6 +334,12 @@ class GraphPlotBokeh(ToggleMenu):
 
         push_notebook()
     
+    def _on_marker_change(self, _=None):
+        clear_output()
+        self.init_plot()
+        self.update()
+        return display(show(self.plot))
+    
     def init_plot(self):
         """Handle plot init"""
         self.node_bokeh_source = bks.ColumnDataSource(dict([(x,
@@ -353,7 +370,9 @@ class GraphPlotBokeh(ToggleMenu):
                                        fill_color='fill_color',
                                        alpha='fill_alpha',
                                        size='size',
-                                       line_width='line_width')#,
+                                       line_width='line_width',
+                                       marker=self.edge_mapper.marker.marker_type.value
+                                       )#,
                                        #marker=edge_marker)
         
         nod = self.plot.scatter(source=self.node_bokeh_source,
@@ -362,8 +381,8 @@ class GraphPlotBokeh(ToggleMenu):
                                 fill_color='fill_color',
                                 fill_alpha='fill_alpha',
                                 size='size',
-                                line_width='line_width')#,
-                                #marker=node_marker)
+                                line_width='line_width',#,
+                                marker=self.node_mapper.marker.marker_type.value)
 
         self.plot.text(source=self.node_bokeh_source,
                        x='x', y='y',
@@ -372,7 +391,6 @@ class GraphPlotBokeh(ToggleMenu):
 
         self.plot.add_tools(HoverTool(tooltips=n_ttip, renderers=[nod]))
         self.plot.add_tools(HoverTool(tooltips=e_ttip, renderers=[edg_center]))
-        
     @property
     def snapshot(self, name='bokeh_scatter'):
       html =  notebook_div(self.plot)

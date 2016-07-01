@@ -454,7 +454,14 @@ class PlotMapper(ToggleMenu):
                'fill_color':{'default_color':'blue','map_data':False,'step':0.05,'min':0.0,'low':0.0}
               }
     
-    def __init__(self, data, mapper_dict=None, **kwargs):
+    def __init__(self, data, mapper_dict=None, marker_opts=None, **kwargs):
+        if marker_opts is None:
+            self._marker_opts = ['circle', 'square', 'asterisk', 'circle_cross',
+                                 'circle_x', 'square_cross', 'square_x', 'triangle',
+                                 'diamond', 'cross', 'x', 'inverted_triangle',
+                                 ]
+        else:
+            self._marker_opts = marker_opts
         self._data = data
         if isinstance(self._data, pd.DataFrame):
             if isinstance(self._data.index.values[0], (list,tuple,str)):
@@ -499,6 +506,8 @@ class PlotMapper(ToggleMenu):
                 filters += [PlotCmapFilter(self._data, name=param,description=param, mode='interactive', **kwargs)]
             else:
                 filters += [PlotDataFilter(self._data, name=param, description=param, mode='interactive', **kwargs)]
+        marker = [Dashboard(['dd$d=Marker type&val=circle&o='+str(self._marker_opts)], name='marker' )]
+        filters += marker        
         return filters
     
     def update(self, _=None):
