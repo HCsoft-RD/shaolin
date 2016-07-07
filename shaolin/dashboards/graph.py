@@ -896,7 +896,7 @@ class GraphMaker(object):
         self.params = matrix_params
         self.panel = matrix_panel
         data = matrix_panel[target].copy()
-        self.df_distance = self.calculate_graph_matrix(data,
+        self.df_distance = self.calculate_graph_matrix(data.values,
                                                        matrix_params)
         self.G = self.create_graph(node_data,
                                    graph_type=graph_type,
@@ -919,7 +919,7 @@ class GraphMaker(object):
 
     def zscore(self, data, attrs=None):
         """Zscore the graph matrix"""
-        return (data-data.mean())/data.std
+        return (data-np.mean(data))/data.std()
 
     def scale(self, data, attrs):
         """Scale the matrix. Attrs:(min,max)"""
