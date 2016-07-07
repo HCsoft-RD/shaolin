@@ -896,7 +896,7 @@ class GraphMaker(object):
         self.params = matrix_params
         self.panel = matrix_panel
         data = matrix_panel[target].copy()
-        self.df_distance = self.calculate_graph_matrix(data.values,
+        self.df_distance = self.calculate_graph_matrix(data,
                                                        matrix_params)
         self.G = self.create_graph(node_data,
                                    graph_type=graph_type,
