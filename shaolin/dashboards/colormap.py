@@ -102,8 +102,8 @@ class SeabornColor(Dashboard):
             self.n_colors.widget.visible = False
             fig = self._cmap_figure(self.cmap)
         else:
-            self.n_colors.widget.visible = True
-            fig = self._palplot_figure(self.pal)
+           self.n_colors.widget.visible = True
+           fig = self._palplot_figure(self.pal)
         return self.fig_to_html(fig[0], height=height, width=width)
     
     @staticmethod
@@ -497,7 +497,7 @@ class CubeHelixPalette(SeabornColor):
             cmap_fig = self._cmap_figure(self.cmap)
             self.fig_widget.value = self.fig_to_html(cmap_fig[0])
         else:
-            self.pal[:] = self.cubehelix_palette(n_colors, start, rot, gamma,
+            self.pal[:] = cubehelix_palette(n_colors, start, rot, gamma,
                                             hue, light, dark, reverse)
             pal_fig = self._palplot_figure(self.pal)
             self.fig_widget.value = self.fig_to_html(pal_fig[0])
