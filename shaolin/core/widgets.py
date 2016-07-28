@@ -116,8 +116,12 @@ class Widget(object):
     def options(self, val):
         try:
             self.target.options = val
+
         except AttributeError:
-            pass
+            try:
+                self._update_options(val)
+            except:
+            	pass
 
     @property
     def visible(self):
@@ -179,6 +183,24 @@ class Widget(object):
             self.target.observe(func, names=names)
     #Methods
     #------------------------------
+    def _update_options(self, cols):
+        """This is for avoiding trailet errors due to invalid selections
+        when updating the widgets options values """
+        current = set(self.target.options)
+        s_cols = set(cols)
+        inter = current.intersection(cols)
+        if inter == set(()):
+            oldopt = self.target.options + ['dummy']
+            self.target.options = oldopt
+            self.value = ('dummy',)
+            newopt = ['dummy'] + cols
+            self.target.options = newopt
+            self.value = (cols[0],)
+            self.target.options = cols
+        else:
+            self.value = tuple(current.intersection(cols))
+            self.target.options = cols
+
     def add_ids(self):
         hack_id = self._hack_id
         class_tag = str(self.class_)

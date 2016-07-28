@@ -36,7 +36,21 @@ class Dashboard(StatelessDashboard):
         self.apply_state()
     def _update_state(self, _=None):
         self._state = self._state_manager.output
-
+    """"
+    @property
+    def kwargs(self):
+        return StatelessDashboard.kwargs
+    
+    @kwargs.setter
+    def kwargs(self,vals):
+        Children values as a kwargs dict for easier interactivity
+        
+        for name in vals.keys():
+            attr = getattr(self, name)
+            if isinstance(attr, Dashboard):
+                attr.kwargs = vals['name']
+            else:
+                attr.value = vals['name']"""
     @property
     def state_manager(self):
         self._state_manager = LayoutHacker(self)

@@ -126,6 +126,18 @@ class StatelessDashboard(object):
         for name in self.mode_dict['interactive']:
             kwargs[name] = getattr(self, name).value
         return kwargs
+    
+    
+    def set_kwargs(self, vals):
+        """Children values as a kwargs dict for easier interactivity"""
+        import shaolin.core.dashboard as sd
+        for name in vals.keys():
+            attr = getattr(self, name)
+            if isinstance(attr, sd.Dashboard):
+                attr.set_kwargs(vals[name])
+            else:
+                attr.value = vals[name]
+    
     @property
     def interactive_kwargs(self):
         """Interactive children values as a kwargs dict for easier interactivity"""
