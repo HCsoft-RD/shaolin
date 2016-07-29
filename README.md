@@ -9,18 +9,24 @@
 
 Its still in a alpha alpha version, the beta version will be realeased before 17 july.
 
-**PLEASE HELP!** I think the package can be installed using setup.py or downloading it from pip typing: **pip install shaolin**. I'm not sure 100% if it works as it is the first time I upload a package. Feedback is appreciated.
+Installation: **pip install shaolin**. 
 
+## Alpha version disclaimer
+
+This package is a few months old and has only been tested by me. Everything should work with medium size data (Pandas and plotting using the svg backend instead of WebGL). If you plan on using shaolin for business please contact me.
 
 ### Dependencies:
-- six.
-- numpy.
-- pandas.
-- planarity.
-- networkx.
-- bokeh.
-- seaborn.
-- vpython (not yet, but really soon)
+- six
+- numpy
+- pandas
+- planarity
+- networkx
+- bokeh
+- seaborn
+- vpython
+- plotly
+- cufflinks
+
 
 
 
@@ -85,7 +91,8 @@ Widgets for slicing any pandas structure or numpy array.
 ###plot mappers
 These Dashboards provide everything you need to create new interactive plots with almost no code.
 
-
+### Plotly compatibility
+Define a custom plot layout using widgets and use the cufflinks library with a pandas DataFrame without writing a single line of code. 
 
 # Upcoming features
 
@@ -95,16 +102,6 @@ I hope most of there are available in the beta release.
 
 It will extend the capabilities of the GraphCalculator for making interactive animated graphs in real time. This is really usefull for visualizing correlation matrix time series. 
 
-
-### VPython support
-
-It will be possible to replicate the capabilities of any plot using VPython as a plotting engine. This will make very easy visualizing interactive 3D scatter plotsand graphs in the notebook. 
-
-### Seaborn plots
-
-Compatibility for displaying seaborn plots will be added shortly. 
-
-### MplD3
 
 Compatibility for mapping data to interactive matplotlib plots using MplD3.
 
