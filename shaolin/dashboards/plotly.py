@@ -6,7 +6,7 @@ from shaolin.dashboards.colormap import MasterPalette, ColormapPicker
 from IPython.core.display import clear_output
 from plotly.offline import init_notebook_mode
 from IPython.core.display import display
-import matplotlib
+import matplotlib.font_manager
 
 
 
@@ -48,7 +48,8 @@ class FontManager(Dashboard):
                  size=12, color='black',
                  mode='interactive',
                  **kwargs):
-        fonts = matplotlib.font_manager.get_fontconfig_fonts()
+        fonts = matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext='ttf')
+        #print(fonts)
         font_names = [matplotlib.font_manager.FontProperties(fname=fname).get_name() for fname in fonts]
         dash = ['c$n=font_manager',['###'+title+'$n=title',
                                     '@select$d=Family&o='+str(font_names)+'&val='+family,
