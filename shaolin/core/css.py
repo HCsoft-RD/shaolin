@@ -19,7 +19,7 @@ class CssKeyword(StatelessDashboard):
             attr_type = 'Text'
         dashboard = ['r$N=css_keyword_sel',
                         ['###'+str(attr_type)+'$N=name_label',
-                         '@text$N=text_val&v=0&val='+str(default_val)+default_unit,
+                         '@text$N=text_val&vis=0&val='+str(default_val)+default_unit,
                          '@(0.,100,0.25,'+str(default_val)+')$N=num_value',
                          '@togs$N=units&o=["%","px","em","cm"]&val='+default_unit,
                          'Default$N=def_label','[[True]]$N=def_display','@('+str(default)+')$n=default',
@@ -171,20 +171,20 @@ class GridCssKeyword(StatelessDashboard):
                         ['r$N=discrete_vals',
                             ['###'+str(attr_type)+'$N=name_label',
                              #align self
-                             '@text$d=Self&N=aself_text&v=0&val='+str(default_val),
+                             '@text$d=Self&N=aself_text&vis=0&val='+str(default_val),
                              '@dd$d=Self&N=align_self&o='+str(align_self_options),
                              'Default$N=def_self_label', '[[True]]$N=def_self_display', '@('+str(default)+')$n=def_self_value',
                              #align items
-                             '@text$d=Items&N=aitems_text&v=0&val='+str(default_val),
+                             '@text$d=Items&N=aitems_text&vis=0&val='+str(default_val),
                              '@dd$d=Items&N=align_items&o='+str(align_items_options),
                              'Default$N=def_items_label', '[[True]]$N=def_items_display', '@('+str(default)+')$n=def_items_value',
                              #justify content
-                             '@text$d=Justify&N=justcont_text&v=0&val='+str(default_val),                            
+                             '@text$d=Justify&N=justcont_text&vis=0&val='+str(default_val),                            
                              '@dd$d=Justify&N=justify_content&o='+str(justify_content_options),
                              'Default$N=def_just_label', '[[True]]$N=def_just_display', '@('+str(default)+')$n=def_just_value',
                              #Common to css keyword widget
                              
-                             'Apply to$N=grid_target_label&v=0', '@togs$v=0&N=grid_target&o=["widget", "target"]',
+                             'Apply to$N=grid_target_label&vis=0', '@togs$v=0&N=grid_target&o=["widget", "target"]',
                              'Text$N=grid_mode_label', '@('+str(not default)+')$n=grid_mode_val',
                             ]
                         ],

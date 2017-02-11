@@ -206,14 +206,14 @@ class AxisPlot(Dashboard):
         else:
             start = 'HTML$N=start&val='+str(self.data[0])
             end = 'HTML$N=end&val='+str(self.data[-1])
-            strf = strf+'$N=strf&v=0'  
+            strf = strf+'$N=strf&vis=0'  
             
         plot = 'HTML$N=plot'
         dash = ['c$N=AxisPlot',
                 [
                     ['r$N=plot_box',[start, plot, end]],
                     ['r$N=buttons_row',['@btn$d=Options&N=opt_button_open']],
-                    ['c$N=opt_box&v=0',[
+                    ['c$N=opt_box&vis=0',[
                                     ['r$N=opt_row_1',['@(1,25,1,18)$d=Font size',
                                                       '@rad$N=vertical&d=Orient&o=["horizontal","vertical"]',
                                                       strf, '@(0.,1.,0.02,0.1)$N=pct_space&d=Label spacing',
@@ -226,7 +226,7 @@ class AxisPlot(Dashboard):
                                     ]
                                    ]
                     ],
-                    ['c$N=cmap_box&v=0',[MasterPalette(name='palette', mode='interactive'),
+                    ['c$N=cmap_box&vis=0',[MasterPalette(name='palette', mode='interactive'),
                                          '@btn$d=Close&N=cmap_button_close']
                     ]
                  ]
@@ -638,7 +638,7 @@ class PanelSlicer(Dashboard):
         self.panel = panel
         self.output = None
         if description == '':
-            desc_title = '##'+description+'$N=pslicer_text&v=0'
+            desc_title = '##'+description+'$N=pslicer_text&vis=0'
         else:
             desc_title = '##'+description+'$N=pslicer_text'
         dash =['c$N=panel_slicer',
@@ -675,7 +675,7 @@ class Panel4DSlicer(Dashboard):
         self.panel4D = panel4D
         self.output = None
         if description == '':
-            desc_title = '##'+description+'$N=pslicer_text&v=0'
+            desc_title = '##'+description+'$N=pslicer_text&vis=0'
         else:
             desc_title = '##'+description+'$N=pslicer_text'
             

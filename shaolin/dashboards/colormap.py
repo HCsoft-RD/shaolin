@@ -17,7 +17,7 @@ from matplotlib import cm
 import matplotlib as mpl
 
 
-from shaolin.core.dashboard import Dashboard, ToggleMenu
+from shaolin.core.dashboard import Dashboard
 
 
 class ColormapPicker(Dashboard):
@@ -34,6 +34,7 @@ class ColormapPicker(Dashboard):
         Dashboard.__init__(self, dash, **kwargs)
         self.mini_display.target.layout.width = "20em"
         self.mini_display.target.layout.height = "2em"
+        self.cmap_btn.widget.layout.max_width='20em'
         self.palette_col.visible = False
         self.cmap = self.master_palette.cmap
         self.pal = self.master_palette.pal
@@ -72,37 +73,36 @@ class SeabornColor(Dashboard):
         self.cmap = self._init_mutable_colormap()
         Dashboard.__init__(self, dash, **kwargs)
         self.init_fig_widget()
-        
-    def init_fig_widget(self, size=1):
+    
+    def _colormap_layout(self,_=None):
+        if self.as_cmap.value:
+            self.n_colors.visible = False
+        else:
+            self.n_colors.visible = True
+            
+    def init_fig_widget(self, size=1, height=None, width=None):
         f, ax = plt.subplots(1, 1, figsize=(1 * size, size))
         plt.close()
+        
+        
+        self.fig_widget.widget.layout.height= height or "7em"
+        self.fig_widget.widget.layout.width= width or "100%"
+        
+        self.fig_widget.target.layout.width= "100%"
+        self.fig_widget.target.layout.height= "100%"
         self.fig_widget.value = self.fig_to_html(f)
     
     def update_fig_widget(self, _=None, height=None, width=None):
         if self.as_cmap.value:
-            self.n_colors.widget.visible = False
             fig = self._cmap_figure(self.cmap)
         else:
-            self.n_colors.widget.visible = True
             fig = self._palplot_figure(self.pal)
-        if height is None:
-            self.fig_widget.widget.layout.height= "7em"
-        else:
-            self.fig_widget.widget.layout.height= height
-        if width is None:
-            self.fig_widget.widget.layout.width= "100%"
-        else:
-            self.fig_widget.widget.layout.width= width
-        self.fig_widget.target.layout.width= "100%"
-        self.fig_widget.target.layout.height= "100%"
         self.fig_widget.value = self.fig_to_html(fig[0])# height=height, width=width)
     
     def get_mini_plot(self,height, width):
         if self.as_cmap.value:
-            self.n_colors.widget.visible = False
             fig = self._cmap_figure(self.cmap)
         else:
-           self.n_colors.widget.visible = True
            fig = self._palplot_figure(self.pal)
         return self.fig_to_html(fig[0], height=height, width=width)
     
@@ -120,6 +120,7 @@ class SeabornColor(Dashboard):
         """Change the LUT values in a matplotlib colormap in-place."""
         cmap._lut[:256] = colors
         cmap._set_extremes()
+        
     @staticmethod
     def _show_cmap(cmap):
         """Show a continuous matplotlib colormap."""
@@ -129,6 +130,7 @@ class SeabornColor(Dashboard):
         ax.set(xticks=[], yticks=[])
         x = np.linspace(0, 1, 256)[np.newaxis, :]
         ax.pcolormesh(x, cmap=cmap)
+        
     @staticmethod
     def _palplot_figure(pal, size=1):
         """Return the matplotlib figure and axis corresponding to a palplot plot.
@@ -151,6 +153,7 @@ class SeabornColor(Dashboard):
         ax.set_yticklabels([])
         plt.close(f)
         return f, ax
+    
     @staticmethod
     def _cmap_figure(cmap):
         """Show a continuous matplotlib colormap."""
@@ -173,15 +176,13 @@ class SeabornColor(Dashboard):
         svg_dta = imgdata.getvalue()
         svg_image = Image(svg_dta)#
         svg_b64 = base64.b64encode(svg_image.data).decode()
-        if height is None:
-            height = self.fig_widget.target.layout.height
-        if width is None:
-            width = self.fig_widget.target.layout.width
+        height = height or self.fig_widget.target.layout.height
+        width = width or self.fig_widget.target.layout.width
         return '<img class="cmap '+img_class+'" height="'+str(height)+'" width="'\
                 +str(width)+'" src="data:image/png;base64,'+svg_b64+'" />'
 
 
-class MasterPalette(ToggleMenu):
+class MasterPalette(Dashboard):
 
     def __init__(self, hex=False, **kwargs):
         self._hex = hex
@@ -192,50 +193,26 @@ class MasterPalette(ToggleMenu):
         sns_palette = SeabornPalette(name='sns_palette')
         button_labels = ['Diverging', 'Colorbrewer', 'Sequential',
                          'Cubehelix', 'Seaborn']
-        ToggleMenu.__init__(self,
-                            children=[diverging, colorbrewer, sequential,
-                                            cubehelix, sns_palette],
-                            button_labels=button_labels,
-                            **kwargs
-                           )
+        children=[diverging, colorbrewer, sequential,
+                  cubehelix, sns_palette]
+        self._name_trans = dict(zip(range(len(button_labels)),[c.name for c in children]))
+        dash= ['t$N=master_palette_tabs&t=Diverging, Colorbrewer, Sequential,Cubehelix, Seaborn',
+              children]
+        Dashboard.__init__(self, dash,**kwargs)
         
         
         self.pal = self.diverging.pal
         self.cmap = self.diverging.cmap
         self.observe(self.update_masterpalette)
         self.update_masterpalette()
-        selected = getattr(self, self.buttons.value)
-        selected.as_cmap.value = False
+        selected = getattr(self, self.tab_selected)
+        
         selected.as_cmap.value = True
-        #self.buttons.observe(self._display_one)
-        #self._display_one()
-    def _hide_all(self):
-        for child in self.get_children_names(self.children_dash):
-            if getattr(self,child).widget.visible:
-                setattr(getattr(self,child).widget,'visible',False)
         
     
-    def update_toggle(self, _=None):
-        """updates toggle visibility"""
         
-        """self.cubehelix.update()
-        self.cubehelix.update_fig_widget()
-        self.sequential.update()
-        self.sequential.update_fig_widget()
-        self.sns_palette.update()
-        self.sns_palette.update_fig_widget()
-        self.diverging.update()
-        self.diverging.update_fig_widget()
-        self.colorbrewer.update()
-        self.colorbrewer.update_fig_widget()"""
+    
 
-        for name in self.child_names:
-            child = getattr(self, name)
-            if name == self.buttons.value:
-                child.visible = True
-                child.update()
-            elif child.visible:
-                    child.visible = False
         
     
     @property
@@ -243,14 +220,17 @@ class MasterPalette(ToggleMenu):
         return self
     @property
     def fig_widget(self):
-        return getattr(self, self.buttons.value).fig_widget
-        
-    def _display_one(self, _=None):
-        self._hide_all()
-        setattr(getattr(self,self.buttons.value), 'visible', True)
+        return getattr(self, self.tab_selected).fig_widget
+    @property
+    def tab_selected(self):
+    
+        return self._name_trans[self.widget.selected_index]
+    
+    
+    
         
     def update_masterpalette(self, _=None):
-        val = self.buttons.value
+        val = self.tab_selected
         self.pal = getattr(self,val).pal
         self.cmap = getattr(self,val).cmap
 
@@ -258,7 +238,7 @@ class MasterPalette(ToggleMenu):
         "Maps an array of data according to the selected palette/colormap"
         if hex is None:
             hex = self._hex
-        selected = getattr(self, self.buttons.value)
+        selected = getattr(self, self.tab_selected)
         Ma = np.max(data)
         mi = np.min(data)
         norm = ((data-mi)/(Ma-mi))#to 0-1 interval
@@ -316,7 +296,7 @@ class SeabornPalette(SeabornColor):
         types = ['hls', 'husl', 'seaborn', 'matplotlib']
         control_box = ['c$N=seaborn_palette',
                        [
-                        ['r$N=varopts_row',['@rad$N=variant&o='+str(variants),
+                        ['r$N=varopts_row',['@togs$N=variant&o='+str(variants),
                                             '@select$N=mpl_cmaps&o='+str(cmlist),
                                             '@select$N=sns_palette&o='+str(sns_pals),
                                            ]],
@@ -324,51 +304,82 @@ class SeabornPalette(SeabornColor):
 
                        ]
                       ]
-        metaparam_box =['c$N=cbw_metaparam_box',
-                        ['@True$d=As cmap',
-                         '@rad$d=Type&o='+str(types),
-                         '@int_slider$d=n_colors&min=2&max=32&val=10&step=1'
+        metaparam_box =['r$N=cbw_metaparam_box',
+                        [
+                         '@togs$d=Type&o='+str(types),
+                         ['c$N=subsub_row',['@True$d=As cmap','@int_slider$d=n_colors&min=2&max=32&val=10&step=1']]
                         ]
                        ]
         
         SeabornColor.__init__(self, control_box, metaparam_box, title, mode='interactive', name=name, **kwargs)
+        
         self.observe(self.update)
         self.observe(self.update_fig_widget)
-        self.update()
+        self.type.observe(self._update_layout)
+        self.as_cmap.observe(self._colormap_layout_2)
+        self._colormap_layout_2()
+        self.update()        
         self.update_fig_widget()
+        self._update_layout()
+        self.type.observe(self._type_layout_hack)
+        self._type_layout_hack()
         
-
-
-    def update(self, _=None):
-        #color_palette(palette=None, n_colors=None, desat=None)
+        
+    def _update_layout(self,_=None):
         if self.type.value == 'hls':
             self.sns_palette.visible = False
             self.mpl_cmaps.visible = False
             self.variant.visible = False
+        elif self.type.value == 'husl':
+            self.sns_palette.visible = False
+            self.mpl_cmaps.visible = False
+            self.variant.visible = False
+        elif self.type.value == 'seaborn':
+            self.sns_palette.visible = True
+            self.mpl_cmaps.visible = False
+            self.variant.visible = False
+        elif self.type.value == 'matplotlib':
+            if self.as_cmap.value:
+                self.desat.visible = False
+            else:
+                self.desat.visible = True
+            self.desat.visible = False
+            self.sns_palette.visible = False
+            self.mpl_cmaps.visible = True
+            self.variant.visible = True
+
+    def _type_layout_hack(self,_=None):
+         if self.type.value == 'matplotlib' and self.as_cmap.value:
+            self.desat.visible = False
+         else:
+            self.desat.visible = True
+    
+    def _colormap_layout_2(self,_=None):
+         self._colormap_layout()
+         if self.type.value == 'matplotlib' and self.as_cmap.value:
+            self.desat.visible = False
+         else:
+            self.desat.visible = True
+        
+
+    def update(self, _=None):
+        
+        if self.type.value == 'hls':
             self.choose_palette(name=self.type.value,
                                 n=self.n_colors.value,
                                 desat=self.desat.value,
                                 as_cmap=self.as_cmap.value)
         elif self.type.value == 'husl':
-            self.sns_palette.visible = False
-            self.mpl_cmaps.visible = False
-            self.variant.visible = False
             self.choose_palette(name=self.type.value,
                                 n=self.n_colors.value,
                                 desat=self.desat.value,
                                 as_cmap=self.as_cmap.value)
         elif self.type.value == 'seaborn':
-            self.sns_palette.visible = True
-            self.mpl_cmaps.visible = False
-            self.variant.visible = False
             self.choose_palette(name=self.sns_palette.value,
                                 n=self.n_colors.value,
                                 desat=self.desat.value,
                                 as_cmap=self.as_cmap.value)
         elif self.type.value == 'matplotlib':
-            self.sns_palette.visible = False
-            self.mpl_cmaps.visible = True
-            self.variant.visible = True
             self.choose_matplotlib(name=self.mpl_cmaps.value,
                                    n=self.n_colors.value,
                                    desat=self.desat.value,
@@ -387,11 +398,6 @@ class SeabornPalette(SeabornColor):
                 name += "_d"
 
         if as_cmap:
-            pal = []
-            pal[:] = color_palette(name, 256, desat)
-            if variant == "reverse" and is_variant(name):
-                self.pal = self.pal[::-1]
-                
             self.cmap  = getattr(cm, name)
         else:
             self.pal[:] = color_palette(name, n, desat)
@@ -468,6 +474,8 @@ class CubeHelixPalette(SeabornColor):
         self.update_fig_widget()
         self.observe(self.update)
         self.observe(self.update_fig_widget)
+        self.as_cmap.observe(self._colormap_layout)
+        self._colormap_layout()
         self.update()
         self.update_fig_widget()
         
@@ -481,10 +489,7 @@ class CubeHelixPalette(SeabornColor):
                               dark=self.dark.value,
                               reverse=self.reverse.value,
                               as_cmap=self.as_cmap.value)
-        if self.as_cmap.value:
-            self.n_colors.widget.visible = False
-        else:
-            self.n_colors.widget.visible = True
+        
 
     def choose_cubehelix(self, n_colors, start, rot, gamma,
                          hue, light, dark, reverse, as_cmap
@@ -530,7 +535,7 @@ class DivergingPalette(SeabornColor):
                     
         metaparam_box =['c$N=cbw_metaparam_box',
                         [
-                            '@True$d=As cmap', '@rad$d=center&o='+str(["dark", "light"]),
+                            '@True$d=As cmap', '@togs$d=center&o='+str(["dark", "light"]),
                              '@(2,32,1,'+str(n)+')$d=n_colors'
                         ]
                        ]
@@ -538,6 +543,8 @@ class DivergingPalette(SeabornColor):
         self.update_fig_widget()
         self.observe(self.update)
         self.observe(self.update_fig_widget)
+        self.as_cmap.observe(self._colormap_layout)
+        self._colormap_layout()
         self.update()
         self.update_fig_widget()
         
@@ -559,7 +566,9 @@ class DivergingPalette(SeabornColor):
             self.pal[:] = diverging_palette(h_neg, h_pos, s, l, sep, n, center)
             pal_fig = self._palplot_figure(self.pal)
             self.fig_widget.value = self.fig_to_html(pal_fig[0])
-
+    
+    
+    
     def update(self, _=None):
         self.choose_diverging_palette(h_neg=self.h_neg.value,
                                       h_pos=self.h_pos.value,
@@ -569,10 +578,7 @@ class DivergingPalette(SeabornColor):
                                       n=self.n_colors.value,
                                       center=self.center.value,
                                       as_cmap=self.as_cmap.value)
-        if self.as_cmap.value:
-            self.n_colors.widget.visible = False
-        else:
-            self.n_colors.widget.visible = True
+        
 
     
 
@@ -612,7 +618,7 @@ class SequentialPalette(SeabornColor):
                       ]
         metaparam_box =['c$N=cbw_metaparam_box',
                         [
-                            ['r$N=metbox_row',['@True$d=As cmap', '@rad$d=Type&o='+str(["dark", "light"]),'@togs$d=Input&o='+str(["rgb", "hls", "husl"])]],
+                            ['r$N=metbox_row',['@True$d=As cmap', '@togs$d=Type&o='+str(["dark", "light"]),'@togs$d=Input&o='+str(["rgb", "hls", "husl"])]],
                              '@(2,32,1,10)$d=n_colors'
                         ]
                        ]
@@ -620,8 +626,27 @@ class SequentialPalette(SeabornColor):
         self.update_fig_widget()
         self.observe(self.update)
         self.observe(self.update_fig_widget)
+        self.as_cmap.observe(self._colormap_layout)
+        self._colormap_layout()
+        self.input.observe(self._update_layout)
+        self._update_layout()
         self.update()
         self.update_fig_widget()
+        
+    def _update_layout(self,_=None):
+        if self.input.value == 'rgb':
+            self.hls_box.visible = False
+            self.husl_box.visible = False
+            self.rgb_box.visible = True
+        elif self.input.value == 'hls':
+            self.hls_box.visible = True
+            self.husl_box.visible = False
+            self.rgb_box.visible = False
+        elif self.input.value == 'husl':
+            self.hls_box.visible = False
+            self.husl_box.visible = True
+            self.rgb_box.visible = False
+        
     def update(self, _=None):
 
         if self.input.value == 'rgb':
@@ -631,9 +656,8 @@ class SequentialPalette(SeabornColor):
                                     n=self.n_colors.value,
                                     as_cmap=self.as_cmap.value
                                    )
-            self.hls_box.visible = False
-            self.husl_box.visible = False
-            self.rgb_box.visible = True
+            
+            
 
         elif self.input.value == 'hls':
             self.choose_palette_hls(h=self.h_hls.value,
@@ -642,9 +666,7 @@ class SequentialPalette(SeabornColor):
                                     n=self.n_colors.value,
                                     as_cmap=self.as_cmap.value
                                    )
-            self.hls_box.visible = True
-            self.husl_box.visible = False
-            self.rgb_box.visible = False
+            
 
         elif self.input.value == 'husl':
             self.choose_palette_husl(h=self.h_husl.value,
@@ -653,9 +675,7 @@ class SequentialPalette(SeabornColor):
                                      n=self.n_colors.value,
                                      as_cmap=self.as_cmap.value
                                     )
-            self.hls_box.visible = False
-            self.husl_box.visible = True
-            self.rgb_box.visible = False
+            
         self.update_fig_widget()
 
     def choose_palette_rgb(self,
@@ -758,40 +778,45 @@ class ColorBrewerPalette(SeabornColor):
         
         self.observe(self.update)
         self.observe(self.update_fig_widget)
+        self.as_cmap.observe(self._colormap_layout)
+        self.type.observe(self._update_layout)
+        self._update_layout()
+        self._colormap_layout()
         self.update()  
         self.update_fig_widget()
-        
-
-    def update(self, _=None):
+    
+    def _update_layout(self,_=None):
         if self.type.value == 'sequential':
             self.seq_opts.visible = True
             self.div_opts.visible = False
             self.qua_opts.visible = False
             self.variant.visible = True
-
-            self.choose_sequential(name=self.seq_opts.value,
-                                   n=self.n_colors.value,
-                                   desat=self.desat.value,
-                                   variant=self.variant.value,
-                                   as_cmap=self.as_cmap.value)
         elif self.type.value == 'diverging':
             self.seq_opts.visible = False
             self.div_opts.visible = True
             self.qua_opts.visible = False
             self.variant.target.options = self.div_var
             self.variant.visible = True
-         
-            self.choose_sequential(name=self.div_opts.value,
-                                   n=self.n_colors.value,
-                                   desat=self.desat.value,
-                                   variant=self.variant.value,
-                                   as_cmap=self.as_cmap.value)
         elif self.type.value == 'qualitative':
             self.seq_opts.visible = False
             self.div_opts.visible = False
             self.qua_opts.visible = True
             self.variant.visible = False
 
+    def update(self, _=None):
+        if self.type.value == 'sequential':
+            self.choose_sequential(name=self.seq_opts.value,
+                                   n=self.n_colors.value,
+                                   desat=self.desat.value,
+                                   variant=self.variant.value,
+                                   as_cmap=self.as_cmap.value)
+        elif self.type.value == 'diverging':
+            self.choose_sequential(name=self.div_opts.value,
+                                   n=self.n_colors.value,
+                                   desat=self.desat.value,
+                                   variant=self.variant.value,
+                                   as_cmap=self.as_cmap.value)
+        elif self.type.value == 'qualitative':
             self.choose_qualitative(name=self.qua_opts.value,
                                     n=self.n_colors.value,
                                     desat=self.desat.value,

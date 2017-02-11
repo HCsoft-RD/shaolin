@@ -111,7 +111,7 @@ class Panel4DToPlot(Dashboard):
                [
                 '##'+description+'$N=pts_description_text',
                 ['r$N=mode_column',['@togs$N=index_tog&d=index&o=["labels","items","major_axis","minor_axis"]&val=items',
-                                    '@togs$N=columns_tog&d=index&o=["labels","items","major_axis","minor_axis"]&val=minor_axis&v=0',
+                                    '@togs$N=columns_tog&d=index&o=["labels","items","major_axis","minor_axis"]&val=minor_axis&vis=0',
                                     '@rad$N=output_mode&d=Output&val=series&o=["series","matrix"]']
                 ],
                 Panel4DSlicer(panel, name='panel_slicer', description='')
@@ -244,7 +244,7 @@ class PlotDataFilter(Dashboard):
         if default is None:
             default = (high+low)*0.5
         if np.isnan(default):
-            def_widget='HTML$N=default_w&v=0'
+            def_widget='HTML$N=default_w&vis=0'
             self.default_value = np.nan
         else:
             def_widget = '@('+str(min)+','+str(max)+','+str(step)+','+str(default)+')$d=Default value'

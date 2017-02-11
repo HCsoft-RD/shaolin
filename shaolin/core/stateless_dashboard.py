@@ -14,6 +14,7 @@ class StatelessDashboard(object):
         self.func = func
         self.dashboard = dashboard
         self.mode = mode
+        
         if not name is None:
             self.name = name
         elif hasattr(dashboard, 'name'):
@@ -56,7 +57,10 @@ class StatelessDashboard(object):
 
     def _init_widget(self, shao, kwargs):
         """Integrates a child Widget as an attribute of the current Dashboard"""
+        
+        
         widget = scpt.shaoscript(shao, kwargs)
+        
         try:
             setattr(self, widget.name, widget)
         except Exception as e:
@@ -64,16 +68,15 @@ class StatelessDashboard(object):
                         'they are reserved words! (You can use dashboard'
                         'as a generic name if you want)'),)
             raise e
-
-        if 'mode' in kwargs.keys():
-            if kwargs['mode'] == 'interactive':
-                self.mode_dict['interactive'] += [widget.name]
-            elif kwargs['mode'] == 'passive':
-                self.mode_dict['passive'] += [widget.name]
-            else:
-                self.mode_dict['active'] += [widget.name]
+        
+        
+        if widget.mode == 'interactive':
+            self.mode_dict['interactive'] += [widget.name]
+        elif widget.mode == 'passive':
+            self.mode_dict['passive'] += [widget.name]
         else:
             self.mode_dict['active'] += [widget.name]
+        
         self.mode_dict['all'] += [widget.name]
 
     def interact(self, _):
@@ -173,6 +176,7 @@ class StatelessDashboard(object):
     def read_shaolist(shaolist):
         """Convert a shaolist block to a corresponding shaoscrpt, kwargs,
         children mapping"""
+        #print("shaolist: {}".format(shaolist))
         try:
             len(shaolist)
         except TypeError:

@@ -33,8 +33,9 @@ class Widget(object):
                  js=None,
                  css=None,
                  visible=True,
+                 mode='active',
                  **kwargs):
-
+            
         if id is None:
             id = ''
         else:
@@ -51,7 +52,7 @@ class Widget(object):
             name = name.lower().replace(' ', '_')
         if class_ is None:
             class_ = ''
-
+        self.mode = mode
         self.name = name
         self.id = id
         self.class_ = class_
@@ -79,15 +80,44 @@ class Widget(object):
             self.label.layout.display = 'none'
             self.label.layout.visibility = 'hidden'
         """
-        self.target = widget(**kwargs)
-        self.widget = wid.HBox(children=[self.target])
+        #self.target = widget(**kwargs)
+        self.widget = widget(**kwargs)#wid.HBox(children=[self.target])#
         
         #self.widget.layout.width = self.target.layout.width
         #self.add_ids()
         self.visible = visible
+        
+        self.autoset_max_width()
+        
+        self.widget.layout.min_width = "5px"
     #Attributes for mimicking standard widget interface
     #----------------------------------------------------
-
+    @property
+    def width(self):
+       return self.widget.layout.width
+    @width.setter
+    def width(self,val):
+        if isinstance(val,str):
+            if not val[-1] =='%':
+                if self.widget.layout.max_width is None: 
+                    self.widget.layout.max_width = val
+                else:
+                    self.widget.layout.max_width = str(max(float(self.widget.layout.max_width[:-2]),
+                                                       float(val[:-2])))+'px'
+            self.widget.layout.width = val
+        elif isinstance(val,(tuple,list)):
+            self.widget.layout.width = val[0]
+            self.widget.layout.max_width = val[1]
+            
+        
+    
+    @property
+    def target(self):
+       return self.widget
+    @property
+    def layout(self):
+        return self.widget.layout
+    
     @property
     def hack(self):
         return self._hack_widget
@@ -126,13 +156,13 @@ class Widget(object):
     @property
     def visible(self):
         """Easier visibility changing"""
-        return self.widget.layout.visibility == '' \
+        return self.widget.layout.visibility == 'visible' \
                and self.widget.layout.display == ''
     @visible.setter
     def visible(self, val):
         """Easier visibility changing"""
         if val:
-            self.widget.layout.visibility = ''
+            self.widget.layout.visibility = 'visible'
             self.widget.layout.display = ''
         else:
             self.widget.layout.visibility = 'hidden'
@@ -142,7 +172,7 @@ class Widget(object):
     @property
     def description(self):
         """Same interface as widgets but easier to iterate"""
-        return self._description
+        return self.target.description
         
     @description.setter
     def description(self, val):
@@ -154,7 +184,7 @@ class Widget(object):
             self.label.layout.visibility = 'hidden'
         else:
             self.label.layout.display = ''
-            self.label.layout.visibility = ''
+            self.label.layout.visibility = 'visible'
 
     @property
     def orientation(self):
@@ -181,14 +211,18 @@ class Widget(object):
             self.target.on_click(func)
         if hasattr(self.target, 'value'):
             self.target.observe(func, names=names)
+    
+    def autoset_max_width(self):
+        if not isinstance(self.widget,(wid.Box,wid.Tab,wid.Accordion,wid.HTML,wid.Image)):
+            self.widget.layout.max_width = '300px'
+            self._max_width_px ='300px'
     #Methods
     #------------------------------
     def _update_options(self, cols):
         """This is for avoiding trailet errors due to invalid selections
         when updating the widgets options values """
         current = set(self.target.options)
-        s_cols = set(cols)
-        inter = current.intersection(cols)
+        inter = current.intersection(set(cols))
         if inter == set(()):
             oldopt = self.target.options + ['dummy']
             self.target.options = oldopt
@@ -198,7 +232,7 @@ class Widget(object):
             self.value = (cols[0],)
             self.target.options = cols
         else:
-            self.value = tuple(current.intersection(cols))
+            self.value = tuple(current.intersection(set(cols)))
             self.target.options = cols
 
     def add_ids(self):

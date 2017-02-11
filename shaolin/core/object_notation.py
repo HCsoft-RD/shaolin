@@ -9,6 +9,7 @@ Created on Thu May 19 12:37:11 2016
 import ipywidgets as wid
 import numpy as np
 from .context import Widget
+import six
 """Object notation library. This is used to easily instantiate widgets"""
 def object_notation(word, kwargs):
     """
@@ -485,19 +486,30 @@ def test_num_words(kwargs={}):
         assert compare(word, wid.FloatSlider, kwargs)
 
 def word_to_options_widget(word, kwargs):
-    #Dropdown
+    #SelectMultiple
     if isinstance(word, list):
+        #no val param
         if len(word) == 1:
             return Widget(wid.SelectMultiple,
                           options=word[0],
                           **kwargs
                          )
-        else:
+        #val param is a string
+        elif isinstance(word[1],six.string_types):
             return Widget(wid.SelectMultiple,
                           options=word[0],
-                          value=word[1],
+                          value=tuple([word[1]]),
                           **kwargs
                          )
+        #val param a tuple or list
+        else:
+            #print(tuple(word[1]) if len(word[1])>1 else tuple([word[1]]))
+            return Widget(wid.SelectMultiple,
+                          options=word[0],
+                          value=tuple(word[1]),# if len(word[1])>1 else tuple([word[1]]),
+                          **kwargs
+                         )
+    #Dropdown
     if isinstance(word, tuple):
         if len(word) == 1:
             return Widget(wid.Dropdown,
@@ -510,3 +522,33 @@ def word_to_options_widget(word, kwargs):
                           value=word[1],
                           **kwargs
                          )
+def test_word_to_options_widget():
+    kwargs = {}
+    #val as list longer than 1 item
+    dd_val_word_list_2 = [['miau','pene'],['miau','pene']]
+    w = word_to_options_widget(dd_val_word_list_2,kwargs)
+    assert(isinstance(w.widget,wid.SelectMultiple))
+    assert(w.widget.options==['miau','pene'])
+    assert(w.widget.value==('miau','pene'))
+    print("Value as Multiple list correct")
+    #val as list of one item
+    dd_val_word_list = [['miau','pene'],['pene']]
+    w = word_to_options_widget(dd_val_word_list,kwargs)
+    assert(isinstance(w.widget,wid.SelectMultiple))
+    assert(w.widget.options==['miau','pene'])
+    assert(w.widget.value==('pene',))
+    print("Value as one element list correct")
+    dd_val_word_str = [['miau','pene'],'pene']
+    #val as string
+    w = word_to_options_widget(dd_val_word_str,kwargs)
+    assert(isinstance(w.widget,wid.SelectMultiple))
+    assert(w.widget.options==['miau','pene'])
+    assert(w.widget.value==('pene',))
+    dd_word = ['miau','pene'],
+    print("Value as string passed correct")
+    sm_val_word = [['miau','pene'],'pene']
+    sm_val_word = [['miau','pene'],['pene','miau']]
+    sm_val_word = [['miau','pene']]
+
+
+    

@@ -12,28 +12,81 @@ from .object_notation import object_notation
 from .context import Widget, Title, SubTitle, SubSubTitle
 
 def shaoscript(word, kwargs=None):
-    """Return a shaolin widget from a ShaoScript value"""
-    if kwargs is None:
-        kwargs = {}
-
+    """Return a shaolin widget from a ShaoScript value.
+    Parameters
+    ----------
+    word : string, object
+        String can be the name of a widget in shaoscript syntax, or a string 
+        conaining the full definition of a widget using the shaoscript syntax to
+        also define its kwargs.
+    kwargs: dict, default: None
+        Contains the kwargs values for the widget that will be returned. The
+        key value parameters contained in the dict will be overriden by those 
+        defined in word.
+    Returns
+    -------
+    widget: shaolin Widget.
+        
+    """
+    
+    kwargs = kwargs or {}
+    #create a widget from a string. get its widget type and kwargs
     if isinstance(word, six.string_types):
-        word, kwargs = handle_shaoscript_syntax(word, kwargs)
+        word, kwargs = _handle_shaoscript_syntax(word, kwargs)
     #word and kwargs from shaoscript syntax
-    #If its a shao reserved word for the layout
+    #if the word corresponds to a widget definition
     if isinstance(word, six.string_types):
-        return string_to_wiget(word, kwargs)
-    #If word is already a ipywidget class
+        return _string_to_wiget(word, kwargs)
+    #If word is already an ipywidget class
     elif isinstance(word, tuple(wid.Widget.widget_types.values())):
         return  Widget(word, **kwargs)
+    #word has to be a python object representing object notation
     try:
         return object_notation(word, kwargs)
     except:
-        raise ValueError('Bad shaoscript syntax.')
+        raise ValueError('''Bad shaoscript syntax. \n
+                         Failed to convert word: {} with kwargs:{}.'''\
+                         .format(word, kwargs))
 
-def handle_shaoscript_syntax(string, kwargs):
+def _handle_shaoscript_syntax(string, kwargs=None):
+    """Return a string defining a shaolin widget and a dictionary containinng
+    its kwargs.
+    Parameters
+    ----------
+    string : string
+        String can be the name of a widget in shaoscript syntax, or a string 
+        conaining the full definition of a widget using the shaoscript syntax to
+        also define its kwargs.
+    kwargs: dict, default: None
+        Contains the kwargs values for the widget that will be returned. The
+        key value parameters contained in the dict will be overriden by those 
+        defined in word.
+    Returns
+    -------
+    word: string
+        Contains only the type of the widget in shaoscript notation.
+    kwargs: dict
+        Dictionary containing the kwargs for creating a shaolin Widget.
+        
+    Shaoscript custom parameters available
+    --------------------------------------
+        paramters(aliases): value parsing 
+        
+        'options'('o', 'opt','opts'): ast.literal_eval
+        'description'('d','desc'): str
+        'id': str
+        'class_'('c','cls'): str
+        'visible'('vis'): boolean
+        'orientation'('ori','orient'): 'vertical','horizontal' 
+        'name'('n'): str
+        'value'('val','v'): str
+            val being a string means that non string values cannot be set this way.
+            Use object notation in the definition of the widget.
+        
+    """
+    kwargs = kwargs or {}
+    #take into account interactivity
     main_key = string[0]
-
-    #simplified mode for just setting interactivity
     if main_key == '@':
         kwargs['mode'] = 'interactive'
         sliced = string[1:]
@@ -45,105 +98,118 @@ def handle_shaoscript_syntax(string, kwargs):
     word = sliced
     #separating widget descriptor from atributes
     split = word.split('$')
-    if len(split) == 2:
-        if splited_is_ON(split[0]):
-            word = ast.literal_eval(split[0])
-        else:
-            word = split[0]
-        params = split[1]
-        kwargs = shaoscript_to_kwargs(params, kwargs)
-    elif len(split) == 1:
-        if splited_is_ON(split[0]):
-            word = ast.literal_eval(split[0])
-        else:
-            word = split[0]
+    if _is_object_notation(split[0]):
+        word = ast.literal_eval(split[0])
+    else:
+        word = split[0]
+    #string defines kwargs
+    
+    kwargs = shaoscript_to_kwargs(split[1], kwargs) if len(split) == 2 else kwargs
     return word, kwargs
 
-def splited_is_ON(string):
+def _is_object_notation(string):
+    """Checks if a string can be converted to object notation"""
     try:
         onw = ast.literal_eval(string)
-        _ = object_notation(onw, {})
+        __ =object_notation(onw, {})
         return True
     except:
         return False
 
-def manage_shao_defaults(kwargs):
-    if 'description' in kwargs.keys()\
-        and 'name' not in kwargs.keys():
-        kwargs['name'] = kwargs['description'].lower().replace(' ', '_')
-
-    if 'name' in kwargs.keys()\
-        and not 'id' in kwargs.keys():
-        kwargs['id'] = kwargs['name'].lower().replace('_', '-')
-    return kwargs
 
 def shaoscript_to_kwargs(string, kwargs):
     params = string.split('&')
     for par in params:
         key, val = decode_param(par)
         kwargs[key] = val
-    kwargs = manage_shao_defaults(kwargs)
+    #name infered from description         
+    if 'description' in kwargs.keys()\
+        and 'name' not in kwargs.keys():
+        kwargs['name'] = kwargs['description'].lower().replace(' ', '_')
+    #id infered from name
+    if 'name' in kwargs.keys()\
+        and not 'id' in kwargs.keys():
+        kwargs['id'] = kwargs['name'].lower().replace('_', '-')
     return kwargs
 
 def decode_param(string):
-    """params = {'d':'description',
-               'id': 'id',
-               'c' : 'class_',
-              'val':'value',
-               'v':'visible',
-               'ori' : 'orientation',
-               'o':'options',
-               'n' : 'name',
-               'm':'mode';
-              }"""
+    """
+    Converts a string representing a parameter in shaoscript syntax to a pair of key, value
+     a valid parameter in shaoscript will have the following form:
+         
+         param --> 'name=val'
+    There are some parameters that have custom parsing and are allowed aliases.
+    The aliases are not case sensitive.
+
+    Paramters(aliases): value parsing 
+    ---------------------------------
+    'options'('o', 'opt','opts'): ast.literal_eval
+    'description'('d','desc'): str
+    'id': str
+    'class_'('c','cls'): str
+    'visible'('vis'): boolean
+    'orientation'('ori','orient'): 'vertical','horizontal' 
+    'name'('n'): str
+    'value'('val','v'): str
+        val being a string means that non string values cannot be set this way.
+        Use object notation in the definition of the widget.
+    'placeholder'('ph','pholder'): str
+    '_titles'('titles','t','title','tit'): dict
+        the val attribute will be the names of each title separated by commas.
+        no need to specify string simbols "" or '', as conversion will be taken
+        care of internally.
+            
+               
+    """
     key, val = string.split('=')
-    if key in  ['o', 'opt', 'options']:
+    key = key.lower()
+    if key in  ['o','opt','opts','options']:
         name = 'options'
         val = ast.literal_eval(val)
-    elif key in  ['d', 'description', 'D']:
+    elif key in  ['d','desc', 'description']:
         name = 'description'
-        val = str(val)
     elif key == 'id':
         name = 'id'
-        val = str(val)
-    elif key in ['class_', 'c']:
+    elif key in ['class_', 'c','cls']:
         name = 'class_'
-        val = str(val)
-    elif key in ['v', 'visible', 'vis']:
+    elif key in ['visible', 'vis']:
         name = 'visible'
-        if val in ['0', 'False']:
-            val = False
-        else:
-            val = True
-    elif key in ['ori', 'orientation']:
+        val = 'visible' if val in ['0', 'False','None'] else 'hidden'
+    elif key in ['ori', 'orientation','orient']:
         name = 'orientation'
-        if str(val) in ['v', 'vertical']:
+        if val in ['v','vert', 'vertical']:
             val = 'vertical'
-        if str(val) in ['h', 'horizontal']:
+        elif val in ['h','hori', 'horizontal']:
             val = 'horizontal'
-    elif key in ['n', 'name', 'N']:
+    elif key in ['n', 'name']:
         name = 'name'
-        val = val
-    elif key in ['val', 'value']:
+    elif key in ['v','val', 'value']:
         name = 'value'
         #val = ast.literal_eval(val)
-        val = val
     elif key in ['mode', 'm']:
         name = 'mode'
-        val = str(val)
+    elif key in ['placeholder','ph','pholder']:
+        name='placeholder'
+    elif key in ['_titles','titles','t','title','tit']:
+        name = '_titles'
+        titles_names = val.split(',')
+        val = dict(zip(range(len(titles_names)),titles_names))
     else:
         name = key
+        val = ast.literal_eval(val)
     return name, val
 
-def string_to_wiget(word, kwargs):
+def _string_to_wiget(word, kwargs):
+    """Creates a shaolin widget from a string and a dictionary of kwargs"""
     assert isinstance(word, six.string_types)
+    word = word.lower()
     #Layout
     #---------------------------------
-    if word in ['c', 'col', 'column', 'VBox', 'V']:
+    if word in ['c', 'col', 'column', 'vbox', 'v']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
         return Widget(wid.VBox, **kwargs)
-    elif word in ['r', 'row', 'HBox', 'R', 'Box', 'H']:
+    elif word in ['r', 'row', 'HBox', 'box', 'h']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
         return Widget(wid.HBox, **kwargs)
@@ -177,7 +243,7 @@ def string_to_wiget(word, kwargs):
             kwargs['id'] = kwargs['name'].lower().replace('_', '-')
         return SubTitle(value=word[2:], **kwargs)
 
-    elif word in ['title', 'h1', '#', 't']:
+    elif word in ['title', 'h1', '#']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
         return Title(**kwargs)
@@ -233,7 +299,7 @@ def string_to_wiget(word, kwargs):
     #    return ToggleDisplaySelection(**kwargs)
     #elif word in ['display_selection','ds','dsel']:
     #    return DisplaySelection(**kwargs)
-    #TODO Include tab options
+    
     #"""
     #Selectors
     #--------------------------
@@ -255,6 +321,20 @@ def string_to_wiget(word, kwargs):
         return Widget(wid.HTML, **kwargs)
     elif word in ['TextArea', 'texta', 'textarea', 'text_area']:
         return Widget(wid.Textarea, **kwargs)
+    
+    elif word in ['tex','latex']:
+        kwargs['value'] = '$$'+str(kwargs['value'])+'$$'
+        if not 'mode' in kwargs.keys():
+            kwargs['mode'] = 'passive'
+            return Widget(wid.Label, **kwargs)
+    elif word in ['tab','t','tabs']:
+        if not 'mode' in kwargs.keys():
+            kwargs['mode'] = 'passive'
+            return Widget(wid.Tab, **kwargs)
+    elif word in ['accordion','accord','tabs','ac','a']:
+        if not 'mode' in kwargs.keys():
+            kwargs['mode'] = 'passive'
+            return Widget(wid.Accordion, **kwargs)
     
     else:
         if not 'value' in kwargs.keys():
