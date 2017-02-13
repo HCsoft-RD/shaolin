@@ -90,6 +90,14 @@ class Widget(object):
         self.autoset_max_width()
         
         self.widget.layout.min_width = "5px"
+    #shorthands for widge and value
+    def __call__(self,**kwaargs):
+        return self.widget.value
+    def __getitem__(self,index):
+        if index is None or isinstance(index,(int,bool)):
+            return self.widget
+        else:
+            raise ValueError("index must be integer or None or bool")
     #Attributes for mimicking standard widget interface
     #----------------------------------------------------
     @property

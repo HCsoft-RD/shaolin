@@ -458,8 +458,21 @@ def word_to_num_widget(word, kwargs):
     float_types = (np.float, np.float128, np.float16,
                    np.float32, np.float64, float)
     if isinstance(word, int_types):
+        if 'value' not in kwargs.keys():
+            kwargs['value'] = word
+        if 'max' not in kwargs.keys():
+            kwargs['max'] = word + 100
+        if 'min' not in kwargs.keys():
+            kwargs['min'] = word -100
+                  
         return Widget(wid.IntSlider, **kwargs)
     elif isinstance(word, float_types):
+        if 'value' not in kwargs.keys():
+            kwargs['value'] = word
+        if 'max' not in kwargs.keys():
+            kwargs['max'] = word + 100.
+        if 'min' not in kwargs.keys():
+            kwargs['min'] = word -100.
         return Widget(wid.FloatSlider, **kwargs)
 
     elif isinstance(word, tuple):

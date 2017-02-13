@@ -8,38 +8,40 @@ Created on Thu May 19 12:03:50 2016
 import ast
 import six
 import ipywidgets as wid
-from .object_notation import object_notation
-from .context import Widget, Title, SubTitle, SubSubTitle
+from shaolin.core.object_notation import object_notation
+from shaolin.core import widgets
+
+#from .widgets import widgets.Widget, widgets.Title, widgets.SubTitle, widgets.SubSubTitle
 
 def shaoscript(word, kwargs=None):
-    """Return a shaolin widget from a ShaoScript value.
+    """Return a shaolin widgets.Widget from a ShaoScript value.
     Parameters
     ----------
     word : string, object
-        String can be the name of a widget in shaoscript syntax, or a string 
-        conaining the full definition of a widget using the shaoscript syntax to
+        String can be the name of a widgets.Widget in shaoscript syntax, or a string 
+        conaining the full definition of a widgets.Widget using the shaoscript syntax to
         also define its kwargs.
     kwargs: dict, default: None
-        Contains the kwargs values for the widget that will be returned. The
+        Contains the kwargs values for the widgets.Widget that will be returned. The
         key value parameters contained in the dict will be overriden by those 
         defined in word.
     Returns
     -------
-    widget: shaolin Widget.
+    widgets.Widget: shaolin widgets.Widget.
         
     """
     
     kwargs = kwargs or {}
-    #create a widget from a string. get its widget type and kwargs
+    #create a widgets.Widget from a string. get its widgets.Widget type and kwargs
     if isinstance(word, six.string_types):
         word, kwargs = _handle_shaoscript_syntax(word, kwargs)
     #word and kwargs from shaoscript syntax
-    #if the word corresponds to a widget definition
+    #if the word corresponds to a widgets.Widget definition
     if isinstance(word, six.string_types):
         return _string_to_wiget(word, kwargs)
-    #If word is already an ipywidget class
+    #If word is already an ipywidgets.Widget class
     elif isinstance(word, tuple(wid.Widget.widget_types.values())):
-        return  Widget(word, **kwargs)
+        return  widgets.Widget(word, **kwargs)
     #word has to be a python object representing object notation
     try:
         return object_notation(word, kwargs)
@@ -49,24 +51,24 @@ def shaoscript(word, kwargs=None):
                          .format(word, kwargs))
 
 def _handle_shaoscript_syntax(string, kwargs=None):
-    """Return a string defining a shaolin widget and a dictionary containinng
+    """Return a string defining a shaolin widgets.Widget and a dictionary containinng
     its kwargs.
     Parameters
     ----------
     string : string
-        String can be the name of a widget in shaoscript syntax, or a string 
-        conaining the full definition of a widget using the shaoscript syntax to
+        String can be the name of a widgets.Widget in shaoscript syntax, or a string 
+        conaining the full definition of a widgets.Widget using the shaoscript syntax to
         also define its kwargs.
     kwargs: dict, default: None
-        Contains the kwargs values for the widget that will be returned. The
+        Contains the kwargs values for the widgets.Widget that will be returned. The
         key value parameters contained in the dict will be overriden by those 
         defined in word.
     Returns
     -------
     word: string
-        Contains only the type of the widget in shaoscript notation.
+        Contains only the type of the widgets.Widget in shaoscript notation.
     kwargs: dict
-        Dictionary containing the kwargs for creating a shaolin Widget.
+        Dictionary containing the kwargs for creating a shaolin widgets.Widget.
         
     Shaoscript custom parameters available
     --------------------------------------
@@ -81,7 +83,7 @@ def _handle_shaoscript_syntax(string, kwargs=None):
         'name'('n'): str
         'value'('val','v'): str
             val being a string means that non string values cannot be set this way.
-            Use object notation in the definition of the widget.
+            Use object notation in the definition of the widgets.Widget.
         
     """
     kwargs = kwargs or {}
@@ -96,7 +98,7 @@ def _handle_shaoscript_syntax(string, kwargs=None):
     else:
         sliced = string
     word = sliced
-    #separating widget descriptor from atributes
+    #separating widgets.Widget descriptor from atributes
     split = word.split('$')
     if _is_object_notation(split[0]):
         word = ast.literal_eval(split[0])
@@ -152,10 +154,10 @@ def decode_param(string):
     'name'('n'): str
     'value'('val','v'): str
         val being a string means that non string values cannot be set this way.
-        Use object notation in the definition of the widget.
+        Use object notation in the definition of the widgets.Widget.
     'placeholder'('ph','pholder'): str
-    '_titles'('titles','t','title','tit'): dict
-        the val attribute will be the names of each title separated by commas.
+    '_widgets.Titles'('widgets.Titles','t','widgets.Title','tit'): dict
+        the val attribute will be the names of each widgets.Title separated by commas.
         no need to specify string simbols "" or '', as conversion will be taken
         care of internally.
             
@@ -170,7 +172,10 @@ def decode_param(string):
         name = 'description'
     elif key == 'id':
         name = 'id'
-    elif key in ['class_', 'c','cls']:
+    elif key in ['continuous_update', 'cu','cont','cupdate']:
+        name = 'continuous_update'
+        val = True if val in ['1','True'] else False
+    elif key in ['class_','cls']:
         name = 'class_'
     elif key in ['visible', 'vis']:
         name = 'visible'
@@ -190,17 +195,22 @@ def decode_param(string):
         name = 'mode'
     elif key in ['placeholder','ph','pholder']:
         name='placeholder'
-    elif key in ['_titles','titles','t','title','tit']:
+    elif key in ['_titles','title','t','widget_titles','tit']:
         name = '_titles'
-        titles_names = val.split(',')
-        val = dict(zip(range(len(titles_names)),titles_names))
+        widgets.Titles_names = val.split(',')
+        val = dict(zip(range(len(widgets.Titles_names)),widgets.Titles_names))
     else:
         name = key
         val = ast.literal_eval(val)
     return name, val
 
 def _string_to_wiget(word, kwargs):
-    """Creates a shaolin widget from a string and a dictionary of kwargs"""
+    def create_colormap(kwargs):
+        from shaolin.dashboards import colormap as cmap
+        if 'id' in kwargs.keys():
+            del kwargs['id']
+        return cmap.ColormapPicker(**kwargs)
+    """Creates a shaolin widgets.Widget from a string and a dictionary of kwargs"""
     assert isinstance(word, six.string_types)
     word = word.lower()
     #Layout
@@ -208,17 +218,17 @@ def _string_to_wiget(word, kwargs):
     if word in ['c', 'col', 'column', 'vbox', 'v']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-        return Widget(wid.VBox, **kwargs)
+        return widgets.Widget(wid.VBox, **kwargs)
     elif word in ['r', 'row', 'HBox', 'box', 'h']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-        return Widget(wid.HBox, **kwargs)
+        return widgets.Widget(wid.HBox, **kwargs)
     #Markdown
     #--------------------------------
-    elif word in ['subsubtitle', 'h3', '###', 'subsub', 'ss']:
+    elif word in ['widgets.SubSubTitle', 'h3', '###', 'subsub', 'ss']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-        return SubSubTitle(**kwargs)
+        return widgets.SubSubTitle(**kwargs)
 
     elif word[:3] == '###':
         if not 'mode' in kwargs.keys():
@@ -227,12 +237,12 @@ def _string_to_wiget(word, kwargs):
             kwargs['name'] = word[3:].lower().replace(' ', '_')
         if not 'id' in kwargs.keys():
             kwargs['id'] = kwargs['name'].lower().replace('_', '-')
-        return SubSubTitle(value=word[3:], **kwargs)
+        return widgets.SubSubTitle(value=word[3:], **kwargs)
 
-    elif word in ['subtitle', 'h2', '##', 'sub', 's']:
+    elif word in ['widgets.SubTitle', 'h2', '##', 'sub', 's']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-        return SubTitle(**kwargs)
+        return widgets.SubTitle(**kwargs)
 
     elif word[:2] == '##':
         if not 'mode' in kwargs.keys():
@@ -241,12 +251,12 @@ def _string_to_wiget(word, kwargs):
             kwargs['name'] = word[2:].lower().replace(' ', '_')
         if not 'id' in kwargs.keys():
             kwargs['id'] = kwargs['name'].lower().replace('_', '-')
-        return SubTitle(value=word[2:], **kwargs)
+        return widgets.SubTitle(value=word[2:], **kwargs)
 
-    elif word in ['title', 'h1', '#']:
+    elif word in ['widgets.Title', 'h1', '#']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-        return Title(**kwargs)
+        return widgets.Title(**kwargs)
 
     elif word[:1] == '#':
         if not 'mode' in kwargs.keys():
@@ -255,40 +265,45 @@ def _string_to_wiget(word, kwargs):
             kwargs['name'] = word[1:].lower().replace(' ', '_')
         if not 'id' in kwargs.keys():
             kwargs['id'] = kwargs['name'].lower().replace('_', '-')
-        return Title(value=word[1:], **kwargs)
+        return widgets.Title(value=word[1:], **kwargs)
 
     #Int and float
     #--------------------------------
     elif word in ['float_slider', 'floatslider', 'fsld', 'fs']:
-        return Widget(wid.FloatSlider, **kwargs)
+        return widgets.Widget(wid.FloatSlider, **kwargs)
     elif word in ['float_text', 'floattext', 'ftxt', 'ft']:
-        return Widget(wid.FloatText, **kwargs)
+        return widgets.Widget(wid.FloatText, **kwargs)
     elif word in ['int_slider', 'intslider', 'isld', 'is']:
-        return Widget(wid.IntSlider, **kwargs)
+        return widgets.Widget(wid.IntSlider, **kwargs)
     elif word in ['int_text', 'inttext', 'itxt', 'it']:
-        return Widget(wid.IntText, **kwargs)
+        return widgets.Widget(wid.IntText, **kwargs)
     #Range
     #--------------------------------
     elif word in ['float_range', 'floatprogress', 'fprog', 'fp']:
-        return Widget(wid.FloatRangeSlider, **kwargs)
+        return widgets.Widget(wid.FloatRangeSlider, **kwargs)
     elif word in ['int_range', 'intrange', 'irng', 'ir']:
-        return Widget(wid.IntRangeSlider, **kwargs)
+        return widgets.Widget(wid.IntRangeSlider, **kwargs)
     #Progress
     #--------------------------------
     elif word in ['float_progress', 'floatprogress', 'fprog', 'fp']:
-        return Widget(wid.FloatProgress, **kwargs)
+        return widgets.Widget(wid.FloatProgress, **kwargs)
     elif word in ['int_progress', 'intprogress', 'iprog', 'ip']:
-        return Widget(wid.IntProgress, **kwargs)
+        return widgets.Widget(wid.IntProgress, **kwargs)
     #Button
     #--------------------------------
     elif word in ['button', 'btn', 'b']:
-        return Widget(wid.Button, **kwargs)
+        return widgets.Widget(wid.Button, **kwargs)
     #string and color
     #---------------
     elif word in ['text', 'txt','str','string']:
-        return Widget(wid.Text, **kwargs)
+        return widgets.Widget(wid.Text, **kwargs)
     elif word in ['color', 'colorpicker','cp','cpicker']:
-        return Widget(wid.ColorPicker, **kwargs)
+        return widgets.Widget(wid.ColorPicker, **kwargs)
+    #colormap
+    
+        
+    elif word in ['cm', 'cmap','colormap','cmappicker']:
+        return create_colormap(kwargs)
         
     #Options for pseudo tabs creation
     #--------------------------------
@@ -304,43 +319,43 @@ def _string_to_wiget(word, kwargs):
     #Selectors
     #--------------------------
     elif word in ['select_multiple', 'selmul', 'sm']:
-        return Widget(wid.SelectMultiple, **kwargs)
+        return widgets.Widget(wid.SelectMultiple, **kwargs)
     elif word in ['select', 'sel']:
-        return Widget(wid.Select, **kwargs)
+        return widgets.Widget(wid.Select, **kwargs)
     elif word in ['dropdown', 'dd', 'ddown']:
-        return Widget(wid.Dropdown, **kwargs)
+        return widgets.Widget(wid.Dropdown, **kwargs)
     elif word in ['selection_slider', 'selslider', 'ss']:
-        return Widget(wid.SelectionSlider, **kwargs)
+        return widgets.Widget(wid.SelectionSlider, **kwargs)
     elif word in ['toggle_button', 'toggle', 'tog']:
-        return Widget(wid.ToggleButton, **kwargs)
+        return widgets.Widget(wid.ToggleButton, **kwargs)
     elif word in ['toggle_buttons', 'toggles', 'togs']:
-        return Widget(wid.ToggleButtons, **kwargs)
+        return widgets.Widget(wid.ToggleButtons, **kwargs)
     elif word in ['radio_buttons', 'radio', 'rad','rs']:
-        return Widget(wid.RadioButtons, **kwargs)
+        return widgets.Widget(wid.RadioButtons, **kwargs)
     elif word in ['html', 'HTML']:
-        return Widget(wid.HTML, **kwargs)
+        return widgets.Widget(wid.HTML, **kwargs)
     elif word in ['TextArea', 'texta', 'textarea', 'text_area']:
-        return Widget(wid.Textarea, **kwargs)
+        return widgets.Widget(wid.Textarea, **kwargs)
     
     elif word in ['tex','latex']:
         kwargs['value'] = '$$'+str(kwargs['value'])+'$$'
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-            return Widget(wid.Label, **kwargs)
+            return widgets.Widget(wid.Label, **kwargs)
     elif word in ['tab','t','tabs']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-            return Widget(wid.Tab, **kwargs)
+            return widgets.Widget(wid.Tab, **kwargs)
     elif word in ['accordion','accord','tabs','ac','a']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-            return Widget(wid.Accordion, **kwargs)
+            return widgets.Widget(wid.Accordion, **kwargs)
     
     else:
         if not 'value' in kwargs.keys():
             kwargs['value'] = word
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-            return Widget(wid.Label, **kwargs)
+            return widgets.Widget(wid.Label, **kwargs)
         else:
-            return Widget(wid.Label, **kwargs)
+            return widgets.Widget(wid.Label, **kwargs)

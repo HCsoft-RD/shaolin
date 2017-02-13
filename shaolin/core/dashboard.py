@@ -4,17 +4,34 @@ Created on Thu May 19 12:02:20 2016
 
 @author: Guillem Duran Ballester
 """
-import six
-import pickle
-from .stateless_dashboard import StatelessDashboard
-from .css import LayoutHacker
+#import six
+#import pickle
+from shaolin.core import stateless_dashboard as sld 
+#from .css import LayoutHacker
 
-class Dashboard(StatelessDashboard):
+class Dashboard(sld.StatelessDashboard):
     """Clash for managing arbitrary Dashboards"""
     def __init__(self,dash, state=None, **kwargs):
-        StatelessDashboard.__init__(self, dash, **kwargs)
-        self._state = self._load_state(state)
-    
+        sld.StatelessDashboard.__init__(self, dash, **kwargs)
+        #self._state = self._load_state(state)
+        
+    def __call__(self,**kwargs):
+        return self.kwargs
+    def __getitem__(self,index):
+        if index is None or isinstance(index,(int,bool)):
+            return self.widget
+        else:
+            raise ValueError("index must be integer or None or bool")
+    """"
+    @property
+    def state(self):
+        return self._state
+    @state.setter
+    def state(self, val):
+        self._state = val
+        self.apply_state()
+    def _update_state(self, _=None):
+        self._state = self._state_manager.output
     
     def _load_state(self, state):
         if isinstance(state, six.string_types):
@@ -26,17 +43,7 @@ class Dashboard(StatelessDashboard):
         if not state is None:
             self.apply_state(state)
         return state
-        
-    @property
-    def state(self):
-        return self._state
-    @state.setter
-    def state(self, val):
-        self._state = val
-        self.apply_state()
-    def _update_state(self, _=None):
-        self._state = self._state_manager.output
-    """"
+    
     @property
     def kwargs(self):
         return StatelessDashboard.kwargs
@@ -50,7 +57,7 @@ class Dashboard(StatelessDashboard):
             if isinstance(attr, Dashboard):
                 attr.kwargs = vals['name']
             else:
-                attr.value = vals['name']"""
+                attr.value = vals['name']
     @property
     def state_manager(self):
         self._state_manager = LayoutHacker(self)
@@ -73,7 +80,7 @@ class Dashboard(StatelessDashboard):
             for tget_attr, val in state_dict[attr]['widget_attrs'].items():
                 tget_wid = getattr(self, attr).target
                 if val != '':
-                    setattr(tget_wid, tget_attr, val)
+                    setattr(tget_wid, tget_attr, val)"""
 
 class ToggleMenu(Dashboard):
     def __init__(self,

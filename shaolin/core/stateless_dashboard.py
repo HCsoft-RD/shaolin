@@ -5,7 +5,7 @@ Created on Wed May 25 15:26:23 2016
 @author: sergio
 """
 import traitlets
-import shaolin.core as sc
+from shaolin import core as sc
 from shaolin.core import shaoscript as scpt
 class StatelessDashboard(object):
     """Clash for managing arbitrary Dashboards"""
