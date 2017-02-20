@@ -249,10 +249,11 @@ class KungFu(Dashboard):
             rev = not is_col
             children, child_names = self.group_children(children,rev,num=num)
             #children like [form fi,sli,sel,bools,text]
-            
-            #two rows/cols with all the blocks
-            return self.create_boxes(children,is_col,num=len(child_names),child_names=child_names)
-        
+            if isinstance(is_col,str):
+            #two rows/cols with all the blockslen     (child_names)
+                return self.create_boxes(children,is_col,num=2,child_names=child_names)
+            else:
+                return self.create_boxes(children,is_col,num=num,child_names=child_names)
         return self.create_boxes(children,is_col,num)
             
     def fun(self,_=None):
