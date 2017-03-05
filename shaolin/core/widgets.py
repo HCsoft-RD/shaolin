@@ -89,7 +89,7 @@ class Widget(object):
         
         self.autoset_max_width()
         
-        self.widget.layout.min_width = "5px"
+        self.widget.layout.min_width = "100px"
     #shorthands for widge and value
     def __call__(self,**kwaargs):
         return self.widget.value
@@ -224,6 +224,8 @@ class Widget(object):
         if not isinstance(self.widget,(wid.Box,wid.Tab,wid.Accordion,wid.HTML,wid.Image)):
             self.widget.layout.max_width = '300px'
             self._max_width_px ='300px'
+        self.widget.layout.min_width = '30px'
+        self._min_width_px ='30px'
     #Methods
     #------------------------------
     def _update_options(self, cols):

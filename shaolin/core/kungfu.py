@@ -28,7 +28,7 @@ class KungFu(Dashboard):
             self.__dic_mode = 'interactive'
         children = self.get_children_widgets(kwargs)
         self.name = name
-        dash = self.process_children_layout(box,children)#dash or [box+'$n='+name,children]
+        dash = dash or self.process_children_layout(box,children)#dash or [box+'$n='+name,children]
         #print(dash)
         Dashboard.__init__(self,dash,name=name,mode=mode)
         self._func = func
