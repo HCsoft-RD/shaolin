@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import string
 import random
-
+import inspect
 import six
 import numpy as np
 import ipywidgets as wid
@@ -26,7 +26,14 @@ class KungFu(Dashboard):
         self.__interact = interact
         if self.__interact and mode is None:
             self.__dic_mode = 'interactive'
-        children = self.get_children_widgets(kwargs)
+        if not func is None:
+            a = inspect.getargspec(func)
+            c_kwargs = dict(zip(a.args[-len(a.defaults):],a.defaults))
+            c_kwargs.update(kwargs)
+        else:
+            c_kwargs = kwargs
+        
+        children = self.get_children_widgets(c_kwargs)
         self.name = name
         dash = dash or self.process_children_layout(box,children)#dash or [box+'$n='+name,children]
         #print(dash)
