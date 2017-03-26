@@ -94,9 +94,11 @@ class AxisPlotLight(Dashboard):
                                    pct_space=self.pct_space
                                   )
         self.plot.widget.layout.width =self._width
-        self.plot.target.layout.width = "100%"
+        self.plot.target.layout.width = "10em"
+        self.plot.target.layout.max_width = "10em"
         self.plot.widget.layout.height = self._height
-        self.plot.target.layout.height = "100%"
+        self.plot.target.layout.height = "3em"
+        self.plot.target.layout.max_height = "3em"
         self.data = data
         self.mask = mask
         if self.is_time_array(data):
@@ -552,7 +554,7 @@ class ArraySlicer(Dashboard):
     
     def update_mode(self):
         if self.slice_mode.value == 'single':
-            if len(self.data) <=15:
+            if len(self.data) <=150000:
                 self.plot_row.visible = False
                 self.dd_selector.visible = True
                 self.sel_sli.visible = True
@@ -565,12 +567,18 @@ class ArraySlicer(Dashboard):
             self.end_slider.visible = False
             self.step_slider.visible = False
         else:
-            self.plot_row.visible = True
+            """self.plot_row.visible = True
             self.dd_selector.visible = False
             self.sel_sli.visible = True
             self.end_slider.visible = True
             self.step_slider.visible = True
-            self.start_slider.visible = True
+            self.start_slider.visible = True"""
+            self.plot_row.visible = False
+            self.dd_selector.visible = True
+            self.sel_sli.visible = True
+            self.start_slider.visible = False
+            self.end_slider.visible = True
+            self.step_slider.visible = True
     
 
     def update_widgets(self):
@@ -625,9 +633,9 @@ class DataFrameSlicer(Dashboard):
         
     def _init_layout(self):
         self.index_slicer.plot.img_height.value = 3.
-        self.index_slicer.plot.img_width.value = 20.
+        self.index_slicer.plot.img_width.value = 9.
         self.columns_slicer.plot.img_height.value = 3.
-        self.columns_slicer.plot.img_width.value = 20.
+        self.columns_slicer.plot.img_width.value = 9.
     
     def update(self, _=None):
         self.output = self.df.ix[self.index_slicer.idx,self.columns_slicer.idx]

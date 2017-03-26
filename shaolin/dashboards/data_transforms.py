@@ -22,7 +22,9 @@ class DataFrameScaler(Dashboard):
             self.funcs = {'raw':lambda x: x,
                           'zscore': lambda x: (x-np.mean(x))/np.std(x),
                           'log': np.log,
-                          'rank':lambda x: pd.DataFrame(x).rank().values.flatten()
+                          'rank':lambda x: pd.DataFrame(x).rank().values.flatten(),
+                          'inv': lambda x: -x,
+                          'cut':lambda x: pd.cut(x,[-1001, 0.1,0.3, 0.6, 0.8, 1.0,1.5, 3.0, 6.0, 12, 1001],labels=False)
                          }
         else:
             self.funcs  = funcs
