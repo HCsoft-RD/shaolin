@@ -12,6 +12,8 @@ from matplotlib.colors import ListedColormap
 from seaborn.palettes import (color_palette, dark_palette, light_palette,
                               diverging_palette, cubehelix_palette)
 
+import colorcet as cc
+
 from IPython.core.display import Image
 from matplotlib import cm
 import matplotlib as mpl
@@ -55,7 +57,10 @@ class ColormapPicker(Dashboard):
         self.mini_display.value = self.master_palette.fig_widget.value
         self.cmap = self.master_palette.cmap
         self.pal = self.master_palette.pal
-        
+
+
+
+       
 class SeabornColor(Dashboard):
     
     def __init__(self,metaparam_dash,control_dash,title, **kwargs):
@@ -182,10 +187,141 @@ class SeabornColor(Dashboard):
                 +str(width)+'" src="data:image/png;base64,'+svg_b64+'" />'
 
 
+class Colorcet(SeabornColor):
+    def __init__(self,**kwargs):
+        
+        # Collapse all colormap aliases into a single string, and then sort by it
+        inverse = {}
+        inv_rev = {}
+        for k,v in cc.cm.items():
+            if not k[-2:] == "_r":
+                inverse[v] = inverse.get(v, [])
+                inverse[v].insert(0,k)
+            else:
+                inv_rev[v] = inverse.get(v, [])
+                inv_rev[v].insert(0,k)
+        all_cms = {',  '.join(reversed(v)):k for (k,v) in inverse.items()}.items()
+        rev_cms = {',  '.join(reversed(v)):k for (k,v) in inv_rev.items()}.items()
+        self._all_cmaps = dict([i for i in all_cms])
+        self._rev_cmaps = dict([i for i in rev_cms])
+        self._div_cms = dict([i for i in all_cms if "diverging" in i[0]])
+        self._iso_cms = dict([i for i in all_cms if "isoluminant" in i[0]])
+        self._linear_cms = dict([i for i in all_cms if "linear" in i[0]])
+        self._cycle_cms = dict([i for i in all_cms if "cyclic" in i[0]])
+        self._alias_cms = dict([(x.split(',')[1].lstrip(' '),v) for x,v in self._all_cmaps.items() if ',' in x])
+        control_box = ['c$N=seaborn_palette',
+                               [
+                                ['c$N=varopts_row',['@select$N=isolum&d=Isoluminant',
+                                                    '@select$N=divergs&d=Diverging',
+                                                    '@select$N=linear&d=Linear',
+                                                    '@select$N=cyclic&d=Cyclic',
+                                                    '@select$N=aliased&d=Aliased cmaps'
+                                                   ]],
+                                
+
+                               ]
+                              ]
+        metaparam_box =['c$N=cbw_metaparam_box',
+                        [
+                         '@dd$D=Cmap type&o=["Cyclic","Aliased","Isoluminance","Diverging","Linear"]',
+                         ['r$N=subsub_row',['@True$d=As cmap','@False$d=Reversed']],
+                         '@int_slider$d=n_colors&min=2&max=32&val=10&step=1'
+                        ]
+                       ]
+
+        SeabornColor.__init__(self,metaparam_dash=metaparam_box,control_dash=control_box,title='Colorcet')
+        self.isolum.options = list(self._iso_cms.keys())
+        self.divergs.options = list(self._div_cms.keys())
+        self.linear.options = list(self._linear_cms.keys())
+        self.cyclic.options = list(self._cycle_cms.keys())
+        self.aliased.options = list(self._alias_cms.keys())
+        self.aliased.layout.max_width = "15em"
+        #updates wheneves a value changes except cmap_type
+        self.isolum.observe(self.update)
+        self.divergs.observe(self.update)
+        self.linear.observe(self.update)
+        self.cyclic.observe(self.update)
+        self.aliased.observe(self.update)
+        self.reversed.observe(self.update)
+        self.as_cmap.observe(self.update)
+        self.n_colors.observe(self.update)
+        
+        self.cmap_type.observe(self._update_selectors)
+        self.as_cmap.observe(self._update_as_cmap)
+        self._cmap_name = 'fire'
+        self.aliased.value = 'inferno' #triggers update
+        self.update({'new':'inferno'})
+        self._update_selectors({'new':'Aliased'})
+        
+        self.cmap_type.layout.max_width = "15em"
+        self._update_as_cmap()
+        self.update_fig_widget()
+    
+    
+    def update(self,val):
+        
+        if not  isinstance(val['new'],(bool,int)):
+            self._curr_cmap = val['new'] if ',' not in val['new'] else val['new'].split(',')[0]
+            self._cmap_name = self._curr_cmap
+            
+        if self.reversed.value:
+                self._cmap_name = self._curr_cmap + '_r'
+        elif self._cmap_name[-2:]=='_r':
+            self._cmap_name = self._curr_cmap
+
+        self.cmap = cc.cm[self._cmap_name]
+        x = np.linspace(0,1,num=self.n_colors.value)
+        self.pal[:] = ListedColormap(self.cmap(x))(x)
+        self.update_fig_widget()
+        
+
+    
+    def _update_selectors(self,val):
+        if val['new']=='Aliased':
+            self.aliased.visible = True
+            self.isolum.visible = False
+            self.divergs.visible = False
+            self.cyclic.visible = False
+            self.linear.visible = False
+        elif val['new']=='Linear':
+            self.aliased.visible = False
+            self.isolum.visible = False
+            self.divergs.visible = False
+            self.cyclic.visible = False
+            self.linear.visible = True
+        elif val['new']=='Isoluminance':
+            self.aliased.visible = False
+            self.isolum.visible = True
+            self.divergs.visible = False
+            self.cyclic.visible = False
+            self.linear.visible = False
+        elif val['new']=='Diverging':
+            self.aliased.visible = False
+            self.isolum.visible = False
+            self.divergs.visible = True
+            self.cyclic.visible = False
+            self.linear.visible = False
+        elif val['new']=='Cyclic':
+            self.aliased.visible = False
+            self.isolum.visible = False
+            self.divergs.visible = False
+            self.cyclic.visible = True
+            self.linear.visible = False
+        
+        
+    
+    def _update_as_cmap(self,_=None):
+        if not self.as_cmap.value:
+            self.n_colors.visible = True
+        else:
+            self.n_colors.visible = False
+
+
 class MasterPalette(Dashboard):
 
     def __init__(self, hex=False, **kwargs):
         self._hex = hex
+        colorcet = Colorcet(name='colorcet')
         colorbrewer = ColorBrewerPalette(name='colorbrewer')
         diverging = DivergingPalette(name='diverging')
         sequential = SequentialPalette(name='sequential')
@@ -193,10 +329,10 @@ class MasterPalette(Dashboard):
         sns_palette = SeabornPalette(name='sns_palette')
         button_labels = ['Diverging', 'Colorbrewer', 'Sequential',
                          'Cubehelix', 'Seaborn']
-        children=[diverging, colorbrewer, sequential,
+        children=[colorcet,diverging, colorbrewer, sequential,
                   cubehelix, sns_palette]
         self._name_trans = dict(zip(range(len(button_labels)),[c.name for c in children]))
-        dash= ['t$N=master_palette_tabs&t=Diverging, Colorbrewer, Sequential,Cubehelix, Seaborn',
+        dash= ['t$N=master_palette_tabs&t=Colorcet,Diverging, Colorbrewer, Sequential,Cubehelix, Seaborn',
               children]
         Dashboard.__init__(self, dash,**kwargs)
         
