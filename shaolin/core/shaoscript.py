@@ -349,8 +349,10 @@ def _string_to_wiget(word, kwargs):
     elif word in ['accordion','accord','tabs','ac','a']:
         if not 'mode' in kwargs.keys():
             kwargs['mode'] = 'passive'
-            return widgets.Widget(wid.Accordion, **kwargs)
-    
+        return widgets.Widget(wid.Accordion, **kwargs)
+
+    elif word in ['datetime','datepicker','date','dpicker','dp']:
+        return widgets.Widget(wid.DatePicker, **kwargs)
     else:
         if not 'value' in kwargs.keys():
             kwargs['value'] = word
